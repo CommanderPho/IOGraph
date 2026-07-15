@@ -1,0 +1,14 @@
+[project]
+name = "iograph"
+version = "2.0.3-rc.004"
+description = "<source media=\"(prefers-color-scheme: dark)\" srcset=\"iograph-2.0.0-dark.jpg\">"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    { name = "Pho Hale", email = "CommanderPho@users.noreply.github.com" },
+]
+dependencies = [
+    "pillow>=10.4.0",
+    "pyinstaller>=6.21.0",
+    "PyQt6>=6.7.0",
+]
