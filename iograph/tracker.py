@@ -10,6 +10,8 @@ from PyQt6.QtCore import QPointF, QRect, QRectF, QTimer, Qt
 from PyQt6.QtGui import QColor, QColorSpace, QCursor, QGuiApplication, QImage, QPainter, QPaintEvent, QPen, QPixmap
 from PyQt6.QtWidgets import QWidget
 
+from iograph.services.lsl_outlet import IOGraphLSLOutlet
+
 
 @dataclass
 class FloatPoint:
@@ -65,6 +67,8 @@ class TrackCanvas(QWidget):
         self._timer.setInterval(33)
         self._timer.timeout.connect(self._on_tick)
 
+        self._lsl = IOGraphLSLOutlet()
+
     @staticmethod
     def _is_windows() -> bool:
         return sys.platform.startswith("win")
@@ -86,6 +90,7 @@ class TrackCanvas(QWidget):
         self._tracking = True
         self._prepare_for_update()
         self._run_started_mono = monotonic()
+        self._lsl.capture_recording_start_timestamps()
         self._timer.start()
 
     def stop_tracking(self) -> None:
@@ -698,6 +703,9 @@ class TrackCanvas(QWidget):
                 self._raw_samples.append((None, None, dt_ms))
         else:
             self._raw_samples.append((float(pos.x()), float(pos.y()), dt_ms))
+
+        if not no_movement or not self._has_written_first_row:
+            self._lsl.push_sample(float(pos.x()), float(pos.y()))
 
         update_rect = QRect()
 

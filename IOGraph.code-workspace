@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../continuous_video_recorder"
+		},
+		{
+			"path": "../PhoPyLSLhelper"
+		}
+	],
+	"settings": {}
+}
