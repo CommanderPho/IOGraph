@@ -1,6 +1,6 @@
 [project]
 name = "iograph"
-version = "2.0.3-rc.004"
+version = "2.0.4"
 description = "<source media=\"(prefers-color-scheme: dark)\" srcset=\"iograph-2.0.0-dark.jpg\">"
 readme = "README.md"
 requires-python = ">=3.9.13"
