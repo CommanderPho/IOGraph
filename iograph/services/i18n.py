@@ -134,6 +134,11 @@ class I18nService:
         "save.raw.dialog_title": "Save Raw Data",
         "save.raw.filter_csv": "CSV file (*.csv)",
         "save.csv_saved": "CSV saved",
+        "menu.stream_csv": "Stream CSV Continuously",
+        "menu.csv_output_folder": "Choose CSV Output Folder...",
+        "csv.stream.footer_template": "{path}  ·  {count} records",
+        "csv.stream.folder_dialog_title": "CSV Output Folder",
+        "csv.stream.start_failed": "CSV stream unavailable",
         "donate.first_graphic_saved.title": "First Graphic Saved",
         "donate.first_graphic_saved.text": "Done - your first IOGraph is saved.",
         "donate.first_graphic_saved.info": "Thanks for using IOGraph. If you'd like to support the project, I'd really appreciate it.",
@@ -2252,6 +2257,153 @@ class I18nService:
     _EXTRA_TRANSLATIONS["es-ES"] = {**_EXTRA_TRANSLATIONS.get("es-419", {}), **_EXTRA_TRANSLATIONS.get("es-ES", {})}
     _TRANSLATIONS["pt-PT"] = {**_TRANSLATIONS.get("pt-BR", {}), **_TRANSLATIONS.get("pt-PT", {})}
     _EXTRA_TRANSLATIONS["pt-PT"] = {**_EXTRA_TRANSLATIONS.get("pt-BR", {}), **_EXTRA_TRANSLATIONS.get("pt-PT", {})}
+
+    _CSV_STREAM_TRANSLATIONS = {
+        "de": {
+            "Stream CSV Continuously": "CSV kontinuierlich streamen",
+            "Choose CSV Output Folder...": "CSV-Ausgabeordner wählen...",
+            "{path}  ·  {count} records": "{path}  ·  {count} Datensätze",
+            "CSV Output Folder": "CSV-Ausgabeordner",
+            "CSV stream unavailable": "CSV-Stream nicht verfügbar",
+        },
+        "fr": {
+            "Stream CSV Continuously": "Diffuser le CSV en continu",
+            "Choose CSV Output Folder...": "Choisir le dossier de sortie CSV...",
+            "{path}  ·  {count} records": "{path}  ·  {count} enregistrements",
+            "CSV Output Folder": "Dossier de sortie CSV",
+            "CSV stream unavailable": "Flux CSV indisponible",
+        },
+        "es-419": {
+            "Stream CSV Continuously": "Transmitir CSV continuamente",
+            "Choose CSV Output Folder...": "Elegir carpeta de salida CSV...",
+            "{path}  ·  {count} records": "{path}  ·  {count} registros",
+            "CSV Output Folder": "Carpeta de salida CSV",
+            "CSV stream unavailable": "Transmisión CSV no disponible",
+        },
+        "es-ES": {
+            "Stream CSV Continuously": "Transmitir CSV continuamente",
+            "Choose CSV Output Folder...": "Elegir carpeta de salida CSV...",
+            "{path}  ·  {count} records": "{path}  ·  {count} registros",
+            "CSV Output Folder": "Carpeta de salida CSV",
+            "CSV stream unavailable": "Transmisión CSV no disponible",
+        },
+        "pt-BR": {
+            "Stream CSV Continuously": "Transmitir CSV continuamente",
+            "Choose CSV Output Folder...": "Escolher pasta de saída CSV...",
+            "{path}  ·  {count} records": "{path}  ·  {count} registros",
+            "CSV Output Folder": "Pasta de saída CSV",
+            "CSV stream unavailable": "Transmissão CSV indisponível",
+        },
+        "pt-PT": {
+            "Stream CSV Continuously": "Transmitir CSV continuamente",
+            "Choose CSV Output Folder...": "Escolher pasta de saída CSV...",
+            "{path}  ·  {count} records": "{path}  ·  {count} registos",
+            "CSV Output Folder": "Pasta de saída CSV",
+            "CSV stream unavailable": "Transmissão CSV indisponível",
+        },
+        "it": {
+            "Stream CSV Continuously": "Trasmetti CSV in continuo",
+            "Choose CSV Output Folder...": "Scegli cartella di output CSV...",
+            "{path}  ·  {count} records": "{path}  ·  {count} record",
+            "CSV Output Folder": "Cartella di output CSV",
+            "CSV stream unavailable": "Stream CSV non disponibile",
+        },
+        "ru": {
+            "Stream CSV Continuously": "Непрерывная запись CSV",
+            "Choose CSV Output Folder...": "Выбрать папку для CSV...",
+            "{path}  ·  {count} records": "{path}  ·  {count} записей",
+            "CSV Output Folder": "Папка для CSV",
+            "CSV stream unavailable": "Поток CSV недоступен",
+        },
+        "uk": {
+            "Stream CSV Continuously": "Неперервний запис CSV",
+            "Choose CSV Output Folder...": "Вибрати папку для CSV...",
+            "{path}  ·  {count} records": "{path}  ·  {count} записів",
+            "CSV Output Folder": "Папка для CSV",
+            "CSV stream unavailable": "Потік CSV недоступний",
+        },
+        "tr": {
+            "Stream CSV Continuously": "CSV'yi sürekli aktar",
+            "Choose CSV Output Folder...": "CSV çıktı klasörünü seç...",
+            "{path}  ·  {count} records": "{path}  ·  {count} kayıt",
+            "CSV Output Folder": "CSV çıktı klasörü",
+            "CSV stream unavailable": "CSV akışı kullanılamıyor",
+        },
+        "ar": {
+            "Stream CSV Continuously": "بث CSV باستمرار",
+            "Choose CSV Output Folder...": "اختيار مجلد إخراج CSV...",
+            "{path}  ·  {count} records": "{path}  ·  {count} سجلات",
+            "CSV Output Folder": "مجلد إخراج CSV",
+            "CSV stream unavailable": "بث CSV غير متاح",
+        },
+        "zh-Hans": {
+            "Stream CSV Continuously": "持续写入 CSV",
+            "Choose CSV Output Folder...": "选择 CSV 输出文件夹...",
+            "{path}  ·  {count} records": "{path}  ·  {count} 条记录",
+            "CSV Output Folder": "CSV 输出文件夹",
+            "CSV stream unavailable": "CSV 流不可用",
+        },
+        "zh-Hant": {
+            "Stream CSV Continuously": "持續寫入 CSV",
+            "Choose CSV Output Folder...": "選擇 CSV 輸出資料夾...",
+            "{path}  ·  {count} records": "{path}  ·  {count} 筆記錄",
+            "CSV Output Folder": "CSV 輸出資料夾",
+            "CSV stream unavailable": "CSV 串流無法使用",
+        },
+        "ja": {
+            "Stream CSV Continuously": "CSV を連続出力",
+            "Choose CSV Output Folder...": "CSV 出力フォルダーを選択...",
+            "{path}  ·  {count} records": "{path}  ·  {count} 件",
+            "CSV Output Folder": "CSV 出力フォルダー",
+            "CSV stream unavailable": "CSV ストリームを利用できません",
+        },
+        "kk": {
+            "Stream CSV Continuously": "CSV-ді үздіксіз жазу",
+            "Choose CSV Output Folder...": "CSV шығыс қалтасын таңдау...",
+            "{path}  ·  {count} records": "{path}  ·  {count} жазба",
+            "CSV Output Folder": "CSV шығыс қалтасы",
+            "CSV stream unavailable": "CSV ағыны қолжетімсіз",
+        },
+        "sr": {
+            "Stream CSV Continuously": "Непрекидно снимање CSV",
+            "Choose CSV Output Folder...": "Изабери CSV излазни фолдер...",
+            "{path}  ·  {count} records": "{path}  ·  {count} записа",
+            "CSV Output Folder": "CSV излазни фолдер",
+            "CSV stream unavailable": "CSV ток није доступан",
+        },
+        "sv": {
+            "Stream CSV Continuously": "Strömma CSV kontinuerligt",
+            "Choose CSV Output Folder...": "Välj CSV-utdatamapp...",
+            "{path}  ·  {count} records": "{path}  ·  {count} poster",
+            "CSV Output Folder": "CSV-utdatamapp",
+            "CSV stream unavailable": "CSV-ström otillgänglig",
+        },
+        "nl": {
+            "Stream CSV Continuously": "CSV continu streamen",
+            "Choose CSV Output Folder...": "CSV-uitvoermap kiezen...",
+            "{path}  ·  {count} records": "{path}  ·  {count} records",
+            "CSV Output Folder": "CSV-uitvoermap",
+            "CSV stream unavailable": "CSV-stream niet beschikbaar",
+        },
+        "pl": {
+            "Stream CSV Continuously": "Strumieniuj CSV w sposób ciągły",
+            "Choose CSV Output Folder...": "Wybierz folder wyjściowy CSV...",
+            "{path}  ·  {count} records": "{path}  ·  {count} rekordów",
+            "CSV Output Folder": "Folder wyjściowy CSV",
+            "CSV stream unavailable": "Strumień CSV niedostępny",
+        },
+        "el": {
+            "Stream CSV Continuously": "Συνεχής ροή CSV",
+            "Choose CSV Output Folder...": "Επιλογή φακέλου εξόδου CSV...",
+            "{path}  ·  {count} records": "{path}  ·  {count} εγγραφές",
+            "CSV Output Folder": "Φάκελος εξόδου CSV",
+            "CSV stream unavailable": "Η ροή CSV δεν είναι διαθέσιμη",
+        },
+    }
+    for _lang, _patch in _CSV_STREAM_TRANSLATIONS.items():
+        _EXTRA_TRANSLATIONS.setdefault(_lang, {}).update(_patch)
+    ## END for _lang, _patch in _CSV_STREAM_TRANSLATIONS.items()....
+
 
     _PLURAL_TEMPLATES = {
         "default": {
