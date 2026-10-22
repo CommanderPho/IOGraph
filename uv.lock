@@ -41,7 +41,7 @@ wheels = [
 [[package]]
 name = "iograph"
 version = "2.0.5"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "phopylslhelper" },
     { name = "pillow", version = "11.3.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
