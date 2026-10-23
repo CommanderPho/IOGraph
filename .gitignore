@@ -20,7 +20,10 @@ dist/
 
 # IDE/editor
 .idea/
-.vscode/
+.vscode/*
+!.vscode/tasks.json
+!.vscode/settings.json
+!.vscode/extensions.json
 
 # macOS
 .DS_Store

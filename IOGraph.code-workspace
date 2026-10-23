@@ -10,5 +10,26 @@
 			"path": "../PhoPyLSLhelper"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"actionButtons": {
+			"reloadButton": null,
+			"loadNpmCommands": false,
+			"commands": [
+				{
+					"name": "$(play) Launch IOGraph",
+					"color": "green",
+					"useVsCodeApi": true,
+					"command": "workbench.action.tasks.runTask",
+					"args": "Launch IOGraph"
+				},
+				{
+					"name": "$(package) Build IOGraph exe",
+					"color": "cyan",
+					"useVsCodeApi": true,
+					"command": "workbench.action.tasks.runTask",
+					"args": "Build IOGraph exe"
+				}
+			]
+		}
+	}
 }

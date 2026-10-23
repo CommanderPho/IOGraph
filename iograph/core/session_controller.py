@@ -91,14 +91,18 @@ class SessionController(QObject):
         format_time=None,
         format_date=None,
     ) -> str:
-        time_label = self.tracking_time_text(elapsed_ms, tr=tr)
-        period = self.period_label(tr=tr, format_time=format_time, format_date=format_date)
         safe_app = self._sanitize_filename_component(app_name)
-        safe_time = self._sanitize_filename_component(time_label)
-        if not period:
-            return f"{safe_app} - {safe_time}"
-        safe_period = self._sanitize_filename_component(period)
-        return f"{safe_app} - {safe_time} ({safe_period})"
+        
+        if self._started_at:
+            start_str = self._started_at.strftime("%Y-%m-%d_%H-%M-%S")
+        else:
+            start_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            
+        total_seconds = round(elapsed_ms / 1000.0)
+        duration_hours = total_seconds / 3600.0
+        safe_duration = self._sanitize_filename_component(f"{duration_hours:.4f}h")
+        
+        return f"{safe_app} - {start_str}_{safe_duration}"
 
     @classmethod
     def tracking_time_text(cls, ms: int, *, tr=lambda s: s, plural=None) -> str:

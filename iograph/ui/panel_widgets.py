@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 
 
 @dataclass(frozen=True)
@@ -12,6 +12,7 @@ class FrontPanelRefs:
     total_time_label: QLabel
     reset_btn: QPushButton
     period_label: QLabel
+    csv_status_label: QLabel
 
 
 @dataclass(frozen=True)
@@ -70,10 +71,22 @@ def build_front_panel(
     front_layout.addWidget(period_label, stretch=0)
     front_layout.setAlignment(period_label, Qt.AlignmentFlag.AlignTop)
 
+    csv_status_label = QLabel("", parent)
+    csv_font_size = 9 if is_windows else 10
+    csv_status_label.setFont(QFont(csv_status_label.font().family(), csv_font_size))
+    csv_status_label.setFixedHeight(16)
+    csv_status_label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
+    csv_status_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+    csv_status_label.setTextFormat(Qt.TextFormat.PlainText)
+    csv_status_label.setVisible(False)
+    front_layout.addWidget(csv_status_label, stretch=0)
+    front_layout.setAlignment(csv_status_label, Qt.AlignmentFlag.AlignTop)
+
     return FrontPanelRefs(
         total_time_label=total_time_label,
         reset_btn=reset_btn,
         period_label=period_label,
+        csv_status_label=csv_status_label,
     )
 
 

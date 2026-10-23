@@ -68,6 +68,10 @@ class TrackCanvas(QWidget):
         self._timer.timeout.connect(self._on_tick)
 
         self._lsl = IOGraphLSLOutlet()
+        self._sample_sink: Callable[..., None] | None = None
+
+    def set_sample_sink(self, sink: Callable[..., None] | None) -> None:
+        self._sample_sink = sink
 
     @staticmethod
     def _is_windows() -> bool:
@@ -693,16 +697,23 @@ class TrackCanvas(QWidget):
         self._last_elapsed_ms = dt_ms
 
         no_movement = self._prev_p.x == self._new_p.x and self._prev_p.y == self._new_p.y
+        appended = True
         if not self._has_written_first_row:
             self._raw_samples.append((float(pos.x()), float(pos.y()), dt_ms))
             self._has_written_first_row = True
         elif no_movement:
             if self._raw_samples and self._raw_samples[-1][0] is None and self._raw_samples[-1][1] is None:
                 self._raw_samples[-1] = (None, None, dt_ms)
+                appended = False
             else:
                 self._raw_samples.append((None, None, dt_ms))
         else:
             self._raw_samples.append((float(pos.x()), float(pos.y()), dt_ms))
+
+        sample = self._raw_samples[-1]
+        sink = self._sample_sink
+        if sink is not None:
+            sink(sample[0], sample[1], sample[2], appended=appended)
 
         if not no_movement or not self._has_written_first_row:
             self._lsl.push_sample(float(pos.x()), float(pos.y()))
