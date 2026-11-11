@@ -148,7 +148,7 @@ class CsvStreamWriter:
         self._active = True
         return path
 
-    def accept(self, x: float | None, y: float | None, t: int, *, appended: bool) -> None:
+    def accept(self, x: float | None, y: float | None, t: int, *, appended: bool, **_kwargs: Any) -> None:
         if not self._active:
             return
         if x is None or y is None:

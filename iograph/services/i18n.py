@@ -139,6 +139,11 @@ class I18nService:
         "csv.stream.footer_template": "{path}  ·  {count} records",
         "csv.stream.folder_dialog_title": "CSV Output Folder",
         "csv.stream.start_failed": "CSV stream unavailable",
+        "menu.stream_sqlite": "Record to SQLite Database",
+        "menu.sqlite_output_folder": "Choose Database Folder...",
+        "sqlite.stream.footer_template": "{path}  ·  {count} records",
+        "sqlite.stream.folder_dialog_title": "Database Folder",
+        "sqlite.stream.start_failed": "SQLite database unavailable",
         "donate.first_graphic_saved.title": "First Graphic Saved",
         "donate.first_graphic_saved.text": "Done - your first IOGraph is saved.",
         "donate.first_graphic_saved.info": "Thanks for using IOGraph. If you'd like to support the project, I'd really appreciate it.",
@@ -2403,6 +2408,132 @@ class I18nService:
     for _lang, _patch in _CSV_STREAM_TRANSLATIONS.items():
         _EXTRA_TRANSLATIONS.setdefault(_lang, {}).update(_patch)
     ## END for _lang, _patch in _CSV_STREAM_TRANSLATIONS.items()....
+
+    _SQLITE_STREAM_TRANSLATIONS = {
+        "de": {
+            "Record to SQLite Database": "In SQLite-Datenbank aufzeichnen",
+            "Choose Database Folder...": "Datenbankordner wählen...",
+            "Database Folder": "Datenbankordner",
+            "SQLite database unavailable": "SQLite-Datenbank nicht verfügbar",
+        },
+        "fr": {
+            "Record to SQLite Database": "Enregistrer dans une base SQLite",
+            "Choose Database Folder...": "Choisir le dossier de base de données...",
+            "Database Folder": "Dossier de base de données",
+            "SQLite database unavailable": "Base SQLite indisponible",
+        },
+        "es-419": {
+            "Record to SQLite Database": "Registrar en base de datos SQLite",
+            "Choose Database Folder...": "Elegir carpeta de base de datos...",
+            "Database Folder": "Carpeta de base de datos",
+            "SQLite database unavailable": "Base de datos SQLite no disponible",
+        },
+        "es-ES": {
+            "Record to SQLite Database": "Registrar en base de datos SQLite",
+            "Choose Database Folder...": "Elegir carpeta de base de datos...",
+            "Database Folder": "Carpeta de base de datos",
+            "SQLite database unavailable": "Base de datos SQLite no disponible",
+        },
+        "pt-BR": {
+            "Record to SQLite Database": "Gravar no banco de dados SQLite",
+            "Choose Database Folder...": "Escolher pasta do banco de dados...",
+            "Database Folder": "Pasta do banco de dados",
+            "SQLite database unavailable": "Banco de dados SQLite indisponível",
+        },
+        "pt-PT": {
+            "Record to SQLite Database": "Gravar na base de dados SQLite",
+            "Choose Database Folder...": "Escolher pasta da base de dados...",
+            "Database Folder": "Pasta da base de dados",
+            "SQLite database unavailable": "Base de dados SQLite indisponível",
+        },
+        "it": {
+            "Record to SQLite Database": "Registra nel database SQLite",
+            "Choose Database Folder...": "Scegli cartella database...",
+            "Database Folder": "Cartella database",
+            "SQLite database unavailable": "Database SQLite non disponibile",
+        },
+        "ru": {
+            "Record to SQLite Database": "Запись в базу SQLite",
+            "Choose Database Folder...": "Выбрать папку базы данных...",
+            "Database Folder": "Папка базы данных",
+            "SQLite database unavailable": "База SQLite недоступна",
+        },
+        "uk": {
+            "Record to SQLite Database": "Запис у базу SQLite",
+            "Choose Database Folder...": "Вибрати папку бази даних...",
+            "Database Folder": "Папка бази даних",
+            "SQLite database unavailable": "База SQLite недоступна",
+        },
+        "tr": {
+            "Record to SQLite Database": "SQLite veritabanına kaydet",
+            "Choose Database Folder...": "Veritabanı klasörünü seç...",
+            "Database Folder": "Veritabanı klasörü",
+            "SQLite database unavailable": "SQLite veritabanı kullanılamıyor",
+        },
+        "ar": {
+            "Record to SQLite Database": "التسجيل في قاعدة بيانات SQLite",
+            "Choose Database Folder...": "اختيار مجلد قاعدة البيانات...",
+            "Database Folder": "مجلد قاعدة البيانات",
+            "SQLite database unavailable": "قاعدة بيانات SQLite غير متاحة",
+        },
+        "zh-Hans": {
+            "Record to SQLite Database": "记录到 SQLite 数据库",
+            "Choose Database Folder...": "选择数据库文件夹...",
+            "Database Folder": "数据库文件夹",
+            "SQLite database unavailable": "SQLite 数据库不可用",
+        },
+        "zh-Hant": {
+            "Record to SQLite Database": "記錄到 SQLite 資料庫",
+            "Choose Database Folder...": "選擇資料庫資料夾...",
+            "Database Folder": "資料庫資料夾",
+            "SQLite database unavailable": "SQLite 資料庫無法使用",
+        },
+        "ja": {
+            "Record to SQLite Database": "SQLite データベースに記録",
+            "Choose Database Folder...": "データベースフォルダーを選択...",
+            "Database Folder": "データベースフォルダー",
+            "SQLite database unavailable": "SQLite データベースを利用できません",
+        },
+        "kk": {
+            "Record to SQLite Database": "SQLite дерекқорына жазу",
+            "Choose Database Folder...": "Дерекқор қалтасын таңдау...",
+            "Database Folder": "Дерекқор қалтасы",
+            "SQLite database unavailable": "SQLite дерекқоры қолжетімсіз",
+        },
+        "sr": {
+            "Record to SQLite Database": "Снимај у SQLite базу",
+            "Choose Database Folder...": "Изабери фолдер базе података...",
+            "Database Folder": "Фолдер базе података",
+            "SQLite database unavailable": "SQLite база није доступна",
+        },
+        "sv": {
+            "Record to SQLite Database": "Spela in till SQLite-databas",
+            "Choose Database Folder...": "Välj databasmap...",
+            "Database Folder": "Databasmap",
+            "SQLite database unavailable": "SQLite-databas otillgänglig",
+        },
+        "nl": {
+            "Record to SQLite Database": "Opnemen naar SQLite-database",
+            "Choose Database Folder...": "Databasemap kiezen...",
+            "Database Folder": "Databasemap",
+            "SQLite database unavailable": "SQLite-database niet beschikbaar",
+        },
+        "pl": {
+            "Record to SQLite Database": "Zapisuj do bazy SQLite",
+            "Choose Database Folder...": "Wybierz folder bazy danych...",
+            "Database Folder": "Folder bazy danych",
+            "SQLite database unavailable": "Baza SQLite niedostępna",
+        },
+        "el": {
+            "Record to SQLite Database": "Εγγραφή σε βάση SQLite",
+            "Choose Database Folder...": "Επιλογή φακέλου βάσης δεδομένων...",
+            "Database Folder": "Φάκελος βάσης δεδομένων",
+            "SQLite database unavailable": "Η βάση SQLite δεν είναι διαθέσιμη",
+        },
+    }
+    for _lang, _patch in _SQLITE_STREAM_TRANSLATIONS.items():
+        _EXTRA_TRANSLATIONS.setdefault(_lang, {}).update(_patch)
+    ## END for _lang, _patch in _SQLITE_STREAM_TRANSLATIONS.items()....
 
 
     _PLURAL_TEMPLATES = {

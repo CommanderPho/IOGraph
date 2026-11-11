@@ -19,6 +19,7 @@ MODULES = (
     "iograph.app.signals",
     "iograph.services.i18n",
     "iograph.services.csv_stream",
+    "iograph.services.sqlite_stream",
     "iograph.core.update_controller",
     "iograph.core.update_service",
     "iograph.core.update_storage",

@@ -14,6 +14,8 @@ class SettingsKeys:
     OPTION_LAST_SAVE_DIR = "options/last_save_dir"
     OPTION_STREAM_CSV = "options/stream_csv"
     OPTION_CSV_OUTPUT_DIR = "options/csv_output_dir"
+    OPTION_STREAM_SQLITE = "options/stream_sqlite"
+    OPTION_SQLITE_OUTPUT_DIR = "options/sqlite_output_dir"
     OPTION_LANGUAGE = "options/language"
 
     UPDATE_LAST_DOWNLOADED_PATH = "updates/last_downloaded_path"

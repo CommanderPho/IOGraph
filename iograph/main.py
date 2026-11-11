@@ -40,6 +40,7 @@ from .core.update_workers import MacZipInstallWorker
 from .services.csv_stream import CsvStreamWriter, stream_csv_path
 from .services.i18n import I18nService
 from .services.settings import AppSettings, SettingsKeys
+from .services.sqlite_stream import SqliteStreamWriter, default_sqlite_path, wall_us_now
 from .ui.icon_loader import build_app_icon
 from .ui.desktop_snapshot_controller import DesktopSnapshotController
 from .ui.layout_scaffold import build_bottom_scaffold
@@ -141,6 +142,8 @@ class MainWindow(QMainWindow):
         self._session_storage = SessionStorage(self._SESSION_STATE_FILE, self._SESSION_CHUNK_MS)
         self._csv_writer = CsvStreamWriter()
         self._csv_stream_error: str | None = None
+        self._sqlite_writer = SqliteStreamWriter()
+        self._sqlite_stream_error: str | None = None
         self._suppress_option_handlers = False
         self._force_quit_requested = False
         self._last_system_dark_mode = False
@@ -312,6 +315,8 @@ class MainWindow(QMainWindow):
             on_refresh_desktop_snapshot=self._refresh_desktop_snapshot,
             on_stream_csv_toggled=self._on_stream_csv_toggled,
             on_choose_csv_output_folder=self._choose_csv_output_folder,
+            on_stream_sqlite_toggled=self._on_stream_sqlite_toggled,
+            on_choose_sqlite_output_folder=self._choose_sqlite_output_folder,
             on_about=self._show_about_dialog,
             on_check_updates=lambda: self._check_for_updates(manual=True),
             on_auto_update_toggled=self._on_auto_update_toggled,
@@ -334,6 +339,8 @@ class MainWindow(QMainWindow):
         self._refresh_desktop_action = refs.refresh_desktop_action
         self._stream_csv_action = refs.stream_csv_action
         self._csv_output_folder_action = refs.csv_output_folder_action
+        self._stream_sqlite_action = refs.stream_sqlite_action
+        self._sqlite_output_folder_action = refs.sqlite_output_folder_action
         self._check_updates_action = refs.check_updates_action
         self._auto_update_action = refs.auto_update_action
         self._install_downloaded_update_action = refs.install_downloaded_update_action
@@ -451,6 +458,7 @@ class MainWindow(QMainWindow):
             return
         if result.was_tracking:
             self._ensure_csv_stream_started()
+            self._ensure_sqlite_stream_started()
         self._perform_reset_post_ui()
 
     def _perform_reset_post_ui(self) -> None:
@@ -492,7 +500,10 @@ class MainWindow(QMainWindow):
             return
         csv_path = ExportController.ensure_csv_path(path)
         self._remember_save_dir(csv_path.parent)
-        csv_path.write_text(self._canvas.export_csv_text(), encoding="utf-8")
+        if self._sqlite_writer.is_open and self._sqlite_writer.session_id is not None:
+            self._sqlite_writer.export_csv_to_path(csv_path)
+        else:
+            csv_path.write_text(self._canvas.export_csv_text(), encoding="utf-8")
         self._status(self._t("save.csv_saved"))
         self._maybe_prompt_support_after_first_raw_save()
         self._sync_ui_state()
@@ -587,6 +598,18 @@ class MainWindow(QMainWindow):
                 logger.warning("Unable to use CSV output folder %s", candidate, exc_info=True)
         return self._default_save_dir()
 
+    def _resolve_sqlite_output_dir(self) -> Path:
+        saved = self._settings.get_str(SettingsKeys.OPTION_SQLITE_OUTPUT_DIR, "")
+        if saved:
+            candidate = Path(saved).expanduser()
+            try:
+                candidate.mkdir(parents=True, exist_ok=True)
+                if candidate.is_dir():
+                    return candidate
+            except OSError:
+                logger.warning("Unable to use SQLite output folder %s", candidate, exc_info=True)
+        return self._resolve_csv_output_dir()
+
     def _session_started_at(self) -> datetime | None:
         raw = self._tracking_controller.session_timestamps_payload().get("session_started_at")
         if not isinstance(raw, str) or not raw:
@@ -596,6 +619,26 @@ class MainWindow(QMainWindow):
         except ValueError:
             return None
 
+    def _session_started_at_us(self) -> int:
+        started = self._session_started_at()
+        if started is None:
+            return wall_us_now()
+        return int(started.timestamp() * 1_000_000)
+
+    def _on_sample_sink(self, x, y, t, *, appended: bool, t_wall_us: int | None = None, t_mono_us: int | None = None) -> None:
+        if self._csv_writer.is_open:
+            self._csv_writer.accept(x, y, t, appended=appended)
+        if self._sqlite_writer.is_open:
+            wall = int(t_wall_us) if t_wall_us is not None else wall_us_now()
+            mono = int(t_mono_us) if t_mono_us is not None else int(t) * 1000
+            self._sqlite_writer.accept(x, y, wall, mono, appended=appended)
+
+    def _refresh_sample_sink(self) -> None:
+        if self._csv_writer.is_open or self._sqlite_writer.is_open:
+            self._canvas.set_sample_sink(self._on_sample_sink)
+        else:
+            self._canvas.set_sample_sink(None)
+
     def _ensure_csv_stream_started(self) -> None:
         if not self._stream_csv_action.isChecked():
             return
@@ -604,26 +647,59 @@ class MainWindow(QMainWindow):
         try:
             path = stream_csv_path(self._resolve_csv_output_dir(), self._session_started_at())
             self._csv_writer.start(path, initial_rows=self._canvas.export_raw_samples())
-            self._canvas.set_sample_sink(self._csv_writer.accept)
             self._csv_stream_error = None
         except Exception as exc:
             logger.warning("Failed to start CSV stream: %s", exc)
             self._csv_stream_error = str(exc)
-            self._canvas.set_sample_sink(None)
+        self._refresh_sample_sink()
+        self._update_csv_status_label()
+
+    def _ensure_sqlite_stream_started(self) -> None:
+        if not self._stream_sqlite_action.isChecked():
+            return
+        if self._sqlite_writer.is_open:
+            return
+        try:
+            path = default_sqlite_path(self._resolve_sqlite_output_dir())
+            self._sqlite_writer.start(
+                path,
+                started_at_us=self._session_started_at_us(),
+                app_version=self._app_version,
+                host=os.environ.get("COMPUTERNAME") or os.environ.get("HOSTNAME"),
+                initial_rows=self._canvas.export_raw_samples(),
+            )
+            self._sqlite_stream_error = None
+        except Exception as exc:
+            logger.warning("Failed to start SQLite stream: %s", exc)
+            self._sqlite_stream_error = str(exc)
+        self._refresh_sample_sink()
         self._update_csv_status_label()
 
     def _pause_csv_stream(self) -> None:
         self._csv_writer.flush_pending_idle()
+        self._sqlite_writer.flush_pending_idle()
         self._update_csv_status_label()
 
     def _stop_csv_stream(self) -> None:
+        self._csv_writer.stop()
+        self._refresh_sample_sink()
+        self._update_csv_status_label()
+
+    def _stop_sqlite_stream(self) -> None:
+        self._sqlite_writer.stop(end_session=True)
+        self._refresh_sample_sink()
+        self._update_csv_status_label()
+
+    def _stop_all_streams(self) -> None:
         self._canvas.set_sample_sink(None)
         self._csv_writer.stop()
+        self._sqlite_writer.stop(end_session=True)
         self._update_csv_status_label()
 
     def _reset_canvas_and_csv(self) -> None:
-        self._stop_csv_stream()
+        self._stop_all_streams()
         self._csv_stream_error = None
+        self._sqlite_stream_error = None
         self._canvas.reset()
 
     def _on_stream_csv_toggled(self, checked: bool) -> None:
@@ -636,6 +712,18 @@ class MainWindow(QMainWindow):
         else:
             self._csv_stream_error = None
             self._stop_csv_stream()
+        self._update_csv_status_label()
+
+    def _on_stream_sqlite_toggled(self, checked: bool) -> None:
+        if self._suppress_option_handlers:
+            return
+        self._persist_option(SettingsKeys.OPTION_STREAM_SQLITE, checked)
+        if checked:
+            if self._canvas.is_tracking():
+                self._ensure_sqlite_stream_started()
+        else:
+            self._sqlite_stream_error = None
+            self._stop_sqlite_stream()
         self._update_csv_status_label()
 
     def _choose_csv_output_folder(self) -> None:
@@ -654,9 +742,43 @@ class MainWindow(QMainWindow):
             return
         self._settings.set(SettingsKeys.OPTION_CSV_OUTPUT_DIR, str(directory), sync=True)
 
+    def _choose_sqlite_output_folder(self) -> None:
+        selected = QFileDialog.getExistingDirectory(
+            self,
+            self._t("sqlite.stream.folder_dialog_title"),
+            str(self._resolve_sqlite_output_dir()),
+        )
+        if not selected:
+            return
+        directory = Path(selected)
+        try:
+            directory.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            logger.warning("Unable to create SQLite output folder %s", directory, exc_info=True)
+            return
+        self._settings.set(SettingsKeys.OPTION_SQLITE_OUTPUT_DIR, str(directory), sync=True)
+
     def _update_csv_status_label(self) -> None:
         label = getattr(self, "_csv_status_label", None)
         if label is None:
+            return
+        sqlite_error = self._sqlite_stream_error or self._sqlite_writer.last_error
+        if sqlite_error and not self._sqlite_writer.is_open and self._stream_sqlite_action.isChecked():
+            label.setText(self._t("sqlite.stream.start_failed"))
+            label.setToolTip(sqlite_error)
+            label.setVisible(True)
+            return
+        if self._sqlite_writer.is_open and self._sqlite_writer.path is not None:
+            path = self._sqlite_writer.path
+            count = self._sqlite_writer.records_written()
+            full = self._t("sqlite.stream.footer_template").format(path=str(path), count=f"{count:,}")
+            parent = label.parentWidget()
+            width = max(1, label.width())
+            if parent is not None:
+                width = max(width, parent.width() - 40)
+            label.setVisible(True)
+            label.setText(label.fontMetrics().elidedText(full, Qt.TextElideMode.ElideMiddle, width))
+            label.setToolTip(str(path))
             return
         error = self._csv_stream_error or self._csv_writer.last_error
         if error and not self._csv_writer.is_open:
@@ -790,6 +912,7 @@ class MainWindow(QMainWindow):
         use_multi_monitor = self._settings.get_bool(SettingsKeys.OPTION_USE_MULTIPLE_MONITORS, True)
         auto_update = self._settings.get_bool(SettingsKeys.OPTION_AUTOMATIC_UPDATE, True)
         stream_csv = self._settings.get_bool(SettingsKeys.OPTION_STREAM_CSV, True)
+        stream_sqlite = self._settings.get_bool(SettingsKeys.OPTION_STREAM_SQLITE, True)
 
         # Apply to runtime first (source of truth), then mirror in UI without signal side-effects.
         self._canvas.set_ignore_mouse_stops(ignore_stops, rebuild=False)
@@ -812,6 +935,7 @@ class MainWindow(QMainWindow):
         self._update_update_desktop_icon()
         self._set_auto_update_state(auto_update)
         self._set_checked_silent(self._stream_csv_action, stream_csv)
+        self._set_checked_silent(self._stream_sqlite_action, stream_sqlite)
         self._sync_ui_state()
 
     def _save_settings(self) -> None:
@@ -823,6 +947,7 @@ class MainWindow(QMainWindow):
                 SettingsKeys.OPTION_USE_DESKTOP_BACKGROUND: self._use_desktop_action.isChecked(),
                 SettingsKeys.OPTION_AUTOMATIC_UPDATE: self._auto_update_action.isChecked(),
                 SettingsKeys.OPTION_STREAM_CSV: self._stream_csv_action.isChecked(),
+                SettingsKeys.OPTION_STREAM_SQLITE: self._stream_sqlite_action.isChecked(),
             },
             sync=True,
         )
@@ -841,6 +966,8 @@ class MainWindow(QMainWindow):
             "render_signature": signature,
             "preview_cache_saved": preview_saved,
             "desktop_cache_saved": desktop_saved,
+            "sqlite_db_path": str(self._sqlite_writer.path) if self._sqlite_writer.path is not None else None,
+            "sqlite_session_id": self._sqlite_writer.session_id,
         }
         self._session_storage.save_state(state)
 
@@ -890,8 +1017,9 @@ class MainWindow(QMainWindow):
             self._force_quit_requested = False
             event.ignore()
             return
-        self._stop_csv_stream()
+        self._pause_csv_stream()
         self._save_session_state()
+        self._stop_all_streams()
         self._save_settings()
         super().closeEvent(event)
 
@@ -899,6 +1027,8 @@ class MainWindow(QMainWindow):
         self._refresh_icons_if_system_theme_changed()
         elapsed_ms = self._canvas.get_elapsed_ms()
         tracking = self._canvas.is_tracking()
+        if tracking and self._sqlite_writer.is_open:
+            self._sqlite_writer.flush_pending_idle()
         self._update_csv_status_label()
         if not self._tracking_controller.should_show_timer_labels(elapsed_ms, tracking):
             return
@@ -933,6 +1063,7 @@ class MainWindow(QMainWindow):
     def _set_tracking(self, enabled: bool) -> None:
         def on_start() -> None:
             self._ensure_csv_stream_started()
+            self._ensure_sqlite_stream_started()
             self._canvas.start_tracking()
 
         def on_stop() -> None:
@@ -1216,8 +1347,9 @@ class MainWindow(QMainWindow):
             if not self._confirm_exit():
                 self._force_quit_requested = False
                 return
-            self._stop_csv_stream()
+            self._pause_csv_stream()
             self._save_session_state()
+            self._stop_all_streams()
             self._save_settings()
             tray = getattr(self, "_tray_icon", None)
             if tray is not None:
@@ -1701,6 +1833,8 @@ class MainWindow(QMainWindow):
         self._refresh_desktop_action.setText(self._t("menu.update_desktop_snapshot"))
         self._stream_csv_action.setText(self._t("menu.stream_csv"))
         self._csv_output_folder_action.setText(self._t("menu.csv_output_folder"))
+        self._stream_sqlite_action.setText(self._t("menu.stream_sqlite"))
+        self._sqlite_output_folder_action.setText(self._t("menu.sqlite_output_folder"))
         self._check_updates_action.setText(
             check_updates_label(
                 is_downloading=self._update_controller.is_downloading(),

@@ -25,6 +25,8 @@ class MenuActionRefs:
     refresh_desktop_action: object
     stream_csv_action: object
     csv_output_folder_action: object
+    stream_sqlite_action: object
+    sqlite_output_folder_action: object
     check_updates_action: object
     auto_update_action: object
     install_downloaded_update_action: object
@@ -55,6 +57,8 @@ def build_main_menu(
     on_refresh_desktop_snapshot,
     on_stream_csv_toggled,
     on_choose_csv_output_folder,
+    on_stream_sqlite_toggled,
+    on_choose_sqlite_output_folder,
     on_about,
     on_check_updates,
     on_auto_update_toggled,
@@ -136,6 +140,16 @@ def build_main_menu(
     csv_output_folder_action.triggered.connect(on_choose_csv_output_folder)
     options_menu.addAction(csv_output_folder_action)
 
+    stream_sqlite_action = QAction(tr("menu.stream_sqlite"), parent)
+    stream_sqlite_action.setCheckable(True)
+    stream_sqlite_action.setChecked(True)
+    stream_sqlite_action.toggled.connect(on_stream_sqlite_toggled)
+    options_menu.addAction(stream_sqlite_action)
+
+    sqlite_output_folder_action = QAction(tr("menu.sqlite_output_folder"), parent)
+    sqlite_output_folder_action.triggered.connect(on_choose_sqlite_output_folder)
+    options_menu.addAction(sqlite_output_folder_action)
+
     options_menu.addSeparator()
     check_updates_action = QAction(tr("menu.check_updates"), parent)
     check_updates_action.triggered.connect(on_check_updates)
@@ -194,6 +208,8 @@ def build_main_menu(
         refresh_desktop_action=refresh_desktop_action,
         stream_csv_action=stream_csv_action,
         csv_output_folder_action=csv_output_folder_action,
+        stream_sqlite_action=stream_sqlite_action,
+        sqlite_output_folder_action=sqlite_output_folder_action,
         check_updates_action=check_updates_action,
         auto_update_action=auto_update_action,
         install_downloaded_update_action=install_downloaded_action,

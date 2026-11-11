@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from math import atan2, pi, sqrt
-from time import monotonic
+from time import monotonic, time_ns
 import sys
 from typing import Any, Callable
 
@@ -29,6 +29,9 @@ class TrackCanvas(QWidget):
     RADIUS_THRESHOLD = 20.0
     DELAY_DISTANCE_QUAD = 400.0
     IDLE_RADIUS_STEP = 0.3
+    # Keep a bounded in-memory trail for preview/rebuild; durable history lives in SQLite.
+    RAW_SAMPLES_BOUND = 100_000
+    RAW_SAMPLES_TRIM_TO = 80_000
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -50,7 +53,7 @@ class TrackCanvas(QWidget):
         self._radius: float = 0.0
 
         self._raw_samples: list[tuple[float | None, float | None, int]] = []
-        self._accumulated_ms: int = 0
+        self._accumulated_us: int = 0
         self._run_started_mono: float | None = None
         self._has_written_first_row = False
 
@@ -99,10 +102,10 @@ class TrackCanvas(QWidget):
 
     def stop_tracking(self) -> None:
         if self._tracking and self._run_started_mono is not None:
-            delta = int((monotonic() - self._run_started_mono) * 1000)
-            self._accumulated_ms += max(0, delta)
+            delta = int((monotonic() - self._run_started_mono) * 1_000_000)
+            self._accumulated_us += max(0, delta)
         self._run_started_mono = None
-        self._last_elapsed_ms = self._accumulated_ms
+        self._last_elapsed_ms = self._accumulated_us // 1000
         self._tracking = False
         self._timer.stop()
         self.update()
@@ -119,7 +122,7 @@ class TrackCanvas(QWidget):
         if self._preview_pixmap is not None:
             self._preview_pixmap.fill(Qt.GlobalColor.transparent)
         self._raw_samples = []
-        self._accumulated_ms = 0
+        self._accumulated_us = 0
         self._has_written_first_row = False
         self._last_elapsed_ms = 0
         self._radius = 0.0
@@ -166,11 +169,15 @@ class TrackCanvas(QWidget):
                 parsed.append((None, None, max(0, t)))
                 continue
             parsed.append((x, y, max(0, t)))
+        ## END for row in rows....
+
         parsed.sort(key=lambda s: s[2])
         self._raw_samples = self._compact_idle_samples(parsed)
-        self._has_written_first_row = len(parsed) > 0
-        self._accumulated_ms = parsed[-1][2] if parsed else 0
-        self._last_elapsed_ms = self._accumulated_ms
+        self._trim_raw_samples()
+        self._has_written_first_row = len(self._raw_samples) > 0
+        last_ms = self._raw_samples[-1][2] if self._raw_samples else 0
+        self._accumulated_us = max(0, int(last_ms)) * 1000
+        self._last_elapsed_ms = last_ms
         if rebuild:
             self._rebuild_from_raw_samples()
 
@@ -626,11 +633,22 @@ class TrackCanvas(QWidget):
     def set_suspend_preview_updates(self, value: bool) -> None:
         self._suspend_preview_updates = value
 
-    def get_elapsed_ms(self) -> int:
+    def get_elapsed_us(self) -> int:
         if self._tracking and self._run_started_mono is not None:
-            delta = int((monotonic() - self._run_started_mono) * 1000)
-            return self._accumulated_ms + max(0, delta)
-        return self._last_elapsed_ms
+            delta = int((monotonic() - self._run_started_mono) * 1_000_000)
+            return self._accumulated_us + max(0, delta)
+        return self._accumulated_us if self._accumulated_us else self._last_elapsed_ms * 1000
+
+    def get_elapsed_ms(self) -> int:
+        return int(self.get_elapsed_us() // 1000)
+
+    def get_wall_us(self) -> int:
+        return int(time_ns() // 1000)
+
+    def _trim_raw_samples(self) -> None:
+        if len(self._raw_samples) <= self.RAW_SAMPLES_BOUND:
+            return
+        self._raw_samples = self._raw_samples[-self.RAW_SAMPLES_TRIM_TO :]
 
     # Internal helpers
 
@@ -693,7 +711,9 @@ class TrackCanvas(QWidget):
         self._new_p.x = float(pos.x())
         self._new_p.y = float(pos.y())
 
-        dt_ms = self.get_elapsed_ms()
+        t_mono_us = self.get_elapsed_us()
+        t_wall_us = self.get_wall_us()
+        dt_ms = int(t_mono_us // 1000)
         self._last_elapsed_ms = dt_ms
 
         no_movement = self._prev_p.x == self._new_p.x and self._prev_p.y == self._new_p.y
@@ -709,11 +729,13 @@ class TrackCanvas(QWidget):
                 self._raw_samples.append((None, None, dt_ms))
         else:
             self._raw_samples.append((float(pos.x()), float(pos.y()), dt_ms))
+        if appended:
+            self._trim_raw_samples()
 
         sample = self._raw_samples[-1]
         sink = self._sample_sink
         if sink is not None:
-            sink(sample[0], sample[1], sample[2], appended=appended)
+            sink(sample[0], sample[1], sample[2], appended=appended, t_wall_us=t_wall_us, t_mono_us=t_mono_us)
 
         if not no_movement or not self._has_written_first_row:
             self._lsl.push_sample(float(pos.x()), float(pos.y()))
