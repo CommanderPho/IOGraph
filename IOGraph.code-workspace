@@ -8,6 +8,12 @@
 		},
 		{
 			"path": "../PhoPyLSLhelper"
+		},
+		{
+			"path": "../PhoPyMNEHelper"
+		},
+		{
+			"path": "../pyPhoTimeline"
 		}
 	],
 	"settings": {
@@ -30,6 +36,7 @@
 					"args": "Build IOGraph exe"
 				}
 			]
-		}
+		},
+		"specstory.cloudSync.enabled": "never"
 	}
 }
