@@ -1734,3 +1734,319 @@ The IOGraph tests have been converted to unittest.
 _**Agent (default)**_
 
 Converted both IOGraph test modules to `unittest.TestCase` (with `tempfile.TemporaryDirectory` instead of pytest’s `tmp_path`). All 6 tests pass via `python -m unittest`.
+
+---
+
+_**User**_
+
+@PhoPyMNEHelper/tests/test_iograph_processor.py why does running say `No tests found in the selected file or folder`?
+
+---
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+Investigating why the test runner reports no tests found in `test_iograph_processor.py`.
+</details></think>
+
+_**Agent (default)**_
+
+Checking how that test file is structured versus what the test explorer expects.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper\tests\test_iograph_processor.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="search" data-tool-name="glob_file_search"><details>
+<summary>Tool use: **glob_file_search** • Searched codebase "" • **3** results in **1** directory</summary>
+
+Directory: **`c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper`** (3 files)
+
+| File |
+|------|
+| `pyproject.toml` |
+| `.vscode\settings.json` |
+| `.vscode\extensions.json` |
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search"><details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+Parameters:
+
+```json
+{
+  "caseInsensitive": false,
+  "glob": "**/settings.json",
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\.cursor\\projects\\c-Users-pho-repos-EmotivEpoc-ACTIVE-DEV-IOGraph",
+  "pattern": "python\\.testing|unittest|pytest"
+}
+```
+Additional data:
+
+```json
+{
+  "isPruned": true,
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\.cursor\\projects\\c-Users-pho-repos-EmotivEpoc-ACTIVE-DEV-IOGraph",
+  "pattern": "python\\.testing|unittest|pytest",
+  "topFiles": [],
+  "totalFiles": 0,
+  "totalMatches": 0
+}
+```
+Status: **completed**
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+Checking VS Code settings for PhoPyMNEHelper. The unittest framework is likely configured.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper\.vscode\settings.json</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="search" data-tool-name="glob_file_search"><details>
+<summary>Tool use: **glob_file_search** • Searched codebase "" • **1** result in **1** directory</summary>
+
+Directory: **`c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\.vscode`** (1 file)
+
+| File |
+|------|
+| `settings.json` |
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+The PhoPyMNEHelper workspace has unittest enabled and pytest disabled. The test file uses pytest syntax, so the test runner finds nothing.
+
+The file uses plain `def test_*` functions, which unittest discovery ignores. Converting it to unittest.TestCase subclasses will fix the issue.
+</details></think>
+
+_**Agent (default)**_
+
+Cursor/VS Code is set to **unittest** discovery for PhoPyMNEHelper, with pytest off:
+
+```1:11:c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper\.vscode\settings.json
+{
+	"python.testing.unittestArgs": [
+		"-v",
+		"-s",
+		"./tests",
+		"-p",
+		"*test*.py"
+	],
+	"python.testing.pytestEnabled": false,
+	"python.testing.unittestEnabled": true
+}
+```
+
+`test_iograph_processor.py` only has plain `def test_*()` functions (pytest style). Unittest only discovers `unittest.TestCase` methods, so the explorer reports no tests.
+
+Converting that file to `unittest.TestCase` now.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2"><details>
+<summary>Tool use: **edit_file_v2** • Edit file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper\tests\test_iograph_processor.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: uv run python -m unittest tests.test_iograph_processor -v</summary>
+```bash
+uv run python -m unittest tests.test_iograph_processor -v
+```
+
+```
+]633;P;Cwd=c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\PhoPyMNEHelper]633;P;HasRichCommandDetection=True]633;A$ ]633;B]633;E;rtk uv run python -m unittest tests.test_iograph_processor -vrtk uv run python -m unittest tests.test_iograph_processor -v
+]633;Ctest_master_df_to_detail_and_intervals (tests.test_iograph_processor.TestIOGraphAdapters) ... ok
+test_absolute_incremental_saves_same_start_shorter_wins (tests.test_iograph_processor.TestIOGraphMerge) ... ok
+test_incremental_saves_same_start_shorter_wins (tests.test_iograph_processor.TestIOGraphMerge) ... ok
+test_overlapping_files_merge_and_dedupe (tests.test_iograph_processor.TestIOGraphMerge) ... ok
+test_parsed_filename_dt_range_absolute (tests.test_iograph_processor.TestIOGraphParsing) ... ok
+test_parsed_filename_dt_range_absolute_sample_basename (tests.test_iograph_processor.TestIOGraphParsing) ... ok
+test_parsed_filename_dt_range_dated (tests.test_iograph_processor.TestIOGraphParsing) ... ok
+test_parsed_filename_dt_range_simple (tests.test_iograph_processor.TestIOGraphParsing) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.231s
+
+OK
+]633;D;0
+
+```
+</details></tool-use>
+
+---
+
+_**User**_
+
+@IOGraph/tests same for 
+
+---
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+IOGraph/tests were already converted to unittest.
+
+Checking whether IOGraph/tests needs .vscode/settings.json for unittest discovery.
+</details></think>
+
+_**Agent (default)**_
+
+Checking IOGraph test discovery settings — the tests are already unittest-style; the missing piece may be VS Code/Cursor unittest config.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\.vscode\settings.json</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\tests\test_export_base_name.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\tests\test_stream_csv_path.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="search" data-tool-name="glob_file_search"><details>
+<summary>Tool use: **glob_file_search** • Searched codebase "" • **2** results in **1** directory</summary>
+
+Directory: **`c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph`** (2 files)
+
+| File |
+|------|
+| `tests\test_export_base_name.py` |
+| `tests\test_stream_csv_path.py` |
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+The tests in @IOGraph/tests are already unittest.
+
+I'll add the unittest discovery settings to IOGraph/.vscode/settings.json, matching PhoPyMNEHelper.
+</details></think>
+
+_**Agent (default)**_
+
+IOGraph tests are already `unittest.TestCase`; discovery fails because `.vscode/settings.json` doesn't enable the unittest framework. Adding the same settings as PhoPyMNEHelper.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2"><details>
+<summary>Tool use: **edit_file_v2** • Edit file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\.vscode\settings.json</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: uv run python -m unittest discover -v -s ./tests -p &#34;*test*.py&#34;</summary>
+```bash
+uv run python -m unittest discover -v -s ./tests -p "*test*.py"
+```
+
+```
+test_export_base_name_absolute_start_and_duration (test_export_base_name.TestExportBaseName.test_export_base_name_absolute_start_and_duration) ... ok
+test_export_base_name_fallback_now_shape_when_not_started (test_export_base_name.TestExportBaseName.test_export_base_name_fallback_now_shape_when_not_started) ... ok
+test_export_base_name_sanitizes_app_name (test_export_base_name.TestExportBaseName.test_export_base_name_sanitizes_app_name) ... ok
+test_stream_csv_path_absolute_start_stamp (test_stream_csv_path.TestStreamCsvPath.test_stream_csv_path_absolute_start_stamp) ... ok
+test_stream_csv_path_collision_allocates_suffix (test_stream_csv_path.TestStreamCsvPath.test_stream_csv_path_collision_allocates_suffix) ... ok
+test_unique_csv_path_increments_until_free (test_stream_csv_path.TestStreamCsvPath.test_unique_csv_path_increments_until_free) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.009s
+
+OK
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+The IOGraph tests were already unittest-based. Only VS Code settings were needed.
+</details></think>
+
+_**Agent (default)**_
+
+The IOGraph test files were already `unittest.TestCase`. What was missing was discovery config in [`.vscode/settings.json`](c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\.vscode\settings.json): unittest enabled, pytest disabled — same as PhoPyMNEHelper.
+
+`python -m unittest discover` finds and runs all 6 tests. Refresh the Testing panel if it still looks empty.
+
+---
+
+_**User**_
+
+<timestamp>Tuesday, Nov 10, 2026, 7:36 PM (UTC-8)</timestamp>
+<system_notification>
+The following task has finished. If you were already aware, ignore this notification and do not restate prior responses.
+
+<task>
+kind: shell
+status: success
+task_id: 712799
+title: Run converted unittest iograph tests
+tool_call_id: call-8a38d4bc-3e54-46c0-bca0-054a722bc1dc-63
+fc_714740b4-6d17-99e8-90f6-783aff63d95b_1
+output_path: C:\Users\pho\.cursor\projects\c-Users-pho-repos-EmotivEpoc-ACTIVE-DEV-IOGraph\terminals\712799.txt
+</task>
+</system_notification>
+<user_query>Briefly inform the user about the task result and perform any follow-up actions (if needed). If there's no follow-ups needed, don't explicitly say that.</user_query>
+
+---
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+The converted unittest iograph tests for PhoPyMNEHelper finished running in the background.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: C:\Users\pho\.cursor\projects\c-Users-pho-repos-EmotivEpoc-ACTIVE-DEV-IOGraph\terminals\712799.txt</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+PhoPyMNEHelper unittest conversion passed all 8 tests.
+</details></think>
+
+_**Agent (default)**_
+
+PhoPyMNEHelper’s converted `test_iograph_processor` suite passed: **8/8 OK**.
