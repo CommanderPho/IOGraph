@@ -4,16 +4,16 @@ overview: Extend PhoPyMNEHelper IOGraphProcessor for absolute CSV export names, 
 todos:
   - id: add-absolute-regex
     content: Add absolute filename regex and parse branch (scalar + vectorized) in PhoPyMNEHelper iograph_data.py; keep legacy paths
-    status: in_progress
+    status: completed
   - id: iograph-unit-tests
     content: Add IOGraph tests/ suite for export_base_name and stream_csv_path absolute filename generation
-    status: pending
+    status: completed
   - id: phopymnehelper-unit-tests
     content: Add PhoPyMNEHelper absolute parse + incremental merge/dedupe unit tests in test_iograph_processor.py
-    status: pending
+    status: completed
   - id: run-focused-tests
     content: Run focused IOGraph and PhoPyMNEHelper unit tests to confirm naming + parse/merge
-    status: pending
+    status: completed
 isProject: false
 ---
 

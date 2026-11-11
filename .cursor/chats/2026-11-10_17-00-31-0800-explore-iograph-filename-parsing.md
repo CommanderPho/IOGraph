@@ -791,6 +791,58 @@ detail: exit_code=1
 
 ---
 
+_**User**_
+
+Explore how PhoPyMNEHelper's IOGraphProcessor parses IOGraph CSV filenames, converts relative times to absolute datetimes, de-duplicates overlapping CSV recordings, and merges into a master DataFrame.
+
+Focus file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper\src\phopymnehelper\iograph_data.py
+
+Also check related tests:
+- c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\pyPhoTimeline\tests\test_iograph_recordings_datasource.py
+
+Return:
+1. Exact function names and line ranges for: filename datetime parsing, scan_csv_directory, overlap/dedupe logic, build_master_df / absolute datetime conversion
+2. Current regex patterns and what old formats they support
+3. How modified_datetime / file mtime is used as a year/date anchor for old formats
+4. Dedup overlap rules (which file wins when overlapping)
+5. Any existing tests covering filename parsing
+6. Whether new absolute format `IOGraphica - 2026-11-09_12-34-12_14.8083h.csv` would already parse or fail, and why
+7. Key code snippets (short) for the critical paths
+
+Do NOT modify any files. Read-only exploration.
+
+---
+
+_**User**_
+
+<system_notification>
+The following task has finished. If you were already aware, ignore this notification and do not restate prior responses.
+
+<task>
+kind: shell
+status: error
+task_id: 738538
+title: Test new filename format parsing
+tool_call_id: tool_b4a7c99f-b2a2-46e7-80ab-b8999b8ae0a
+detail: exit_code=1
+</task>
+</system_notification>
+<user_query>Briefly inform the user about the task result and perform any follow-up actions (if needed). If there's no follow-ups needed, don't explicitly say that.</user_query>
+
+---
+
+_**Agent (composer-2.5)**_
+
+<think><details><summary>Thought Process</summary>
+TheThe parsing test failed parsing test failed with a ModuleNotFoundError with a ModuleNotFoundError for phopymnehelper. for phopymnehelper. Running Python directly Running Python directly from the PhoPyMNEHelper from the PhoPyMNEHelper directory without the package on PYTHONPATH directory without the package on PYTHONPATH caused the import failure caused the import failure..
+</details></think>
+
+_**Agent (composer-2.5)**_
+
+The quick parse test didn't run — Python couldn't import `phopymnehelper` without the package on the path. Verifying with `PYTHONPATH` set:
+The quick parse test didn't run — Python couldn't import `phopymnehelper` without the package on the path. Verifying with `PYTHONPATH` set:
+
+
 _**Agent (composer-2.5)**_
 
 <tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
@@ -798,4 +850,39 @@ _**Agent (composer-2.5)**_
 ```bash
 $env:PYTHONPATH="c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper\src"; python -c "from phopymnehelper.iograph_data import IOGraphProcessor; import pandas as pd; name='IOGraphica - 2026-11-09_12-34-12_14.8083h.csv'; modified=pd.Timestamp('2026-11-09 12:50:00'); print(IOGraphProcessor._parsed_filename_dt_range(name, modified))"
 ```
+
+```
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    from phopymnehelper.iograph_data import IOGraphProcessor; import pandas as pd; name='IOGraphica - 2026-11-09_12-34-12_14.8083h.csv'; modified=pd.Timestamp('2026-11-09 12:50:00'); print(IOGraphProcessor._parsed_filename_dt_range(name, modified))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper\src\phopymnehelper\iograph_data.py", line 8, in <module>
+    import numpy as np
+ModuleNotFoundError: No module named 'numpy'
+
+```
 </details></tool-use>
+
+_**Agent (composer-2.5)**_
+
+<think><details><summary>Thought Process</summary>
+NumPy is not installed in the default Python environment. The follow-up runtime test cannot be executed.
+</details></think>
+
+_**Agent (composer-2.5)**_
+
+<think><details><summary>Thought Process</summary>
+NumPy is not installed in the default Python environment. The follow-up runtime test cannot be executed.
+</details></think>
+
+_**Agent (composer-2.5)**_
+
+The **“Test new filename format parsing”** shell task failed with **`ModuleNotFoundError: no module named 'phopymnehelper'`** — the one-liner was run from the repo without `src` on `PYTHONPATH` or an editable install.
+
+A retry with `PYTHONPATH` set then failed on **`numpy`** missing in that Python environment, so there’s still no live runtime check in this session. That doesn’t change the earlier read-only conclusion: **`IOGraphica - 2026-11-09_12-34-12_14.8083h.csv` doesn’t match the existing `(from … to …)` regexes**, so `_parsed_filename_dt_range` returns **`(NaT, NaT)`** and `build_master_df` drops the file via **`dropna` on `parsed_filename_dt_end`**.
+
+To verify locally in your envThe **“Test new filename format parsing”** shell task failed with **`ModuleNotFoundError: no module named 'phopymnehelper'`** — the one-liner was run from the repo without `src` on `PYTHONPATH` or an editable install.
+
+A retry with `PYTHONPATH` set then failed on **`numpy`** missing in that Python environment, so there’s still no live runtime check in this session. That doesn’t change the earlier read-only conclusion: **`IOGraphica - 2026-11-09_12-34-12_14.8083h.csv` doesn’t match the existing `(from … to …)` regexes**, so `_parsed_filename_dt_range` returns **`(NaT, NaT)`** and `build_master_df` drops the file via **`dropna` on `parsed_filename_dt_end`**.
+
+To verify locally in your env: `pip install -e .` (or set `PYTHONPATH` to `PhoPyMNEHelper\src`) and run `pytest tests/test_iograph_processor.py -k parsed_filename`.: `pip install -e .` (or set `PYTHONPATH` to `PhoPyMNEHelper\src`) and run `pytest tests/test_iograph_processor.py -k parsed_filename`.

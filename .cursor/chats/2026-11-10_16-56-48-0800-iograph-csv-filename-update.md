@@ -325,6 +325,13 @@ Additional data:
   "terminationReason": "completed"
 }
 ```
+Result:
+
+```json
+{
+  "agentId": "75f98eff-3f0b-41ae-96ef-2636202af2c2"
+}
+```
 Status: **completed**
 
 </details></tool-use>
@@ -349,14 +356,23 @@ Additional data:
 
 ```json
 {
-  "status": "loading",
+  "backgroundCompletionStatus": "success",
+  "status": "success",
   "subagentComposerId": "26a69e3d-ff2a-479f-8674-6b5d907e5c8b",
   "supersededSubagentComposerIds": [
     "b51269bd-aaf8-45ae-b040-0d9c7e5c5b1d"
-  ]
+  ],
+  "terminationReason": "completed"
 }
 ```
-Status: **loading**
+Result:
+
+```json
+{
+  "agentId": "26a69e3d-ff2a-479f-8674-6b5d907e5c8b"
+}
+```
+Status: **completed**
 
 </details></tool-use>
 
@@ -373,3 +389,1348 @@ _**Agent (default)**_
 <summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\pyPhoTimeline\tests\test_iograph_recordings_datasource.py</summary>
 
 </details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+I have a clear picture of the task. I will now check the relevant files.
+
+I am reviewing the PhoPyMNEHelper tests. The new filename format stores dt_start and duration, so dt_end equals dt_start plus duration_hours. Absolute sample times anchor to dt_end minus remaining time. If t_max matches the rounded duration exactly, alignment is perfect. Otherwise slight skew may occur.
+
+Streaming filenames without duration hours were considered but set aside. The user's request focuses on the new format with duration.
+
+Streaming filenames without duration will also be supported. End times can be inferred from the CSV content when duration is missing. The scan-time overlap grouping still requires end times before any file reading occurs.
+</details></think>
+
+---
+
+_**User**_
+
+finish the plan
+
+---
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+I need to finish the plan.
+
+I have enough information to finalize the plan. The concrete format will be `IOGraphica - YYYY-MM-DD_HH-MM-SS_<duration>h.csv`, with start and end times parsed from the filename. I am also checking whether to include the streaming format without duration, since the user specifically mentioned the duration variant.
+
+I will include support for the streaming format without duration. End time will be derived from the CSV's maximum timestamp or file modification time.
+
+The absolute-with-duration format is the primary new format. Legacy formats will remain supported. For streaming files without duration, end time will be derived from file modification time or a fallback calculation.
+
+For the new format, sample times will be calculated as `dt_start + time_ms` instead of anchoring at the end. This is more accurate because the duration in the filename already represents elapsed milliseconds.
+
+End-anchoring will remain for legacy formats to avoid breaking existing behavior. For the new format, end time is derived from start plus the parsed duration. Streaming files without duration will use file modification time as end time or be dropped if unavailable.
+</details></think>
+
+_**Agent (default)**_
+
+I have enough to lock in a concrete approach. Checking the primary test file once, then writing the plan.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="search" data-tool-name="glob_file_search"><details>
+<summary>Tool use: **glob_file_search** • Searched codebase "" • **1** result in **1** directory</summary>
+
+Directory: **`c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper`** (1 file)
+
+| File |
+|------|
+| `tests\test_iograph_processor.py` |
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper\src\phopymnehelper\iograph_data.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="get_mcp_tools"><details>
+<summary>Tool use: **get_mcp_tools**</summary>
+
+Parameters:
+
+```json
+{
+  "server": "plugin-chat-jump-links-jump",
+  "toolName": "resolve_code_jump"
+}
+```
+Result:
+
+```json
+{
+  "content": "{\"tool\":\"resolve_code_jump\",\"description\":\"Resolve a code snippet to the most likely workspace file and line range, then return a clickable Cursor citation fence header (startLine:endLine:filepath). Use when citing existing workspace code without a verified filepath and line range, when the model paraphrased or omitted a path, when the user wants to jump/open/find that code, or for /jump-to-code. Do not use for brand-new proposed code that is not in the repo.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"snippet\":{\"type\":\"string\",\"description\":\"Literal code text, 1-8 lines, unique-ish. Strip \\\"... existing code ...\\\" placeholders.\"},\"workspace_roots\":{\"type\":\"array\",\"items\":{\"type\":\"string\"},\"description\":\"Absolute workspace folder paths from this session. Required if MCP roots are unavailable.\"},\"hint_path\":{\"type\":\"string\",\"description\":\"File, directory, or glob the model guessed.\"},\"hint_symbol\":{\"type\":\"string\",\"description\":\"Function, class, or identifier name.\"},\"glob\":{\"type\":\"string\",\"description\":\"ripgrep glob such as *.py or *.{ts,tsx}. Inferred from the snippet when omitted.\"},\"max_results\":{\"type\":\"integer\",\"description\":\"Maximum ranked matches to return (default 5, cap 20).\"}},\"required\":[\"snippet\"]}}"
+}
+```
+Status: **completed**
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+I will create the plan.
+
+The plan adds a regex for the absolute filename format `YYYY-MM-DD_HH-MM-SS_<float>h`. It will support both absolute timestamps with duration and stamp-only files. For stamp-only files, the end time will default to the file's modified datetime.
+
+The plan will focus strictly on the absolute filename format with duration. Existing streaming stamp-only parsing will remain unchanged. The parser should not require a modified datetime to parse absolute filenames.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="create_plan"><details>
+<summary>Tool use: **create_plan**</summary>
+Cancelled
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+A JSON error likely stems from escaping issues with the plan string.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="create_plan"><details>
+<summary>Tool use: **create_plan**</summary>
+
+Parameters:
+
+````json
+{
+  "name": "IOGraph absolute CSV parse",
+  "overview": "Extend PhoPyMNEHelper IOGraphProcessor so new absolute export names (YYYY-MM-DD_HH-MM-SS_\u003chours\u003eh) parse to correct start/end datetimes, while legacy from-to names, overlap merge, and master-df dedupe keep working.",
+  "plan": "# Support absolute IOGraph CSV filenames in IOGraphProcessor\n\n## Problem\n\n[iograph_data.py](c:/Users/pho/repos/EmotivEpoc/ACTIVE_DEV/PhoPyMNEHelper/src/phopymnehelper/iograph_data.py) only recognizes legacy names with `(from HH-MM to HH-MM)` (optionally with month/day labels), anchoring the calendar day via file mtime. New Save Raw Data names from [session_controller.export_base_name](c:/Users/pho/repos/EmotivEpoc/ACTIVE_DEV/IOGraph/iograph/core/session_controller.py) look like:\n\n`IOGraphica - 2026-11-09_12-34-12_14.8083h.csv`\n\nThat string matches neither legacy regex, so `_parsed_filename_dt_range` returns NaT and `build_master_df` drops the file via `dropna` on `parsed_filename_dt_end`. CSV body schema is unchanged (`x,y,time` with relative ms), so only filename-to-interval parsing needs to change.\n\n## Chosen semantics\n\nFor the absolute format:\n\n- `dt_start` = naive local wall clock from `YYYY-MM-DD_HH-MM-SS` in the basename (same clock as IOGraph `strftime`, no timezone suffix).\n- `dt_end` = `dt_start + Timedelta(hours=\u003cfloat before h\u003e)` (e.g. 14.8083).\n- Absolute parsing does **not** require `modified_datetime` (unlike legacy formats).\n- Precedence in `_parsed_filename_dt_range` / vectorized scan: absolute, then dated, then simple, then NaT.\n- Leave `build_master_df` absolute-time math and overlap/dedupe as-is: still end-anchor samples with `sample_time = dt_end - (t_max - time) ms`, still union overlapping filename intervals, still rank by earlier `parsed_filename_dt_end` then start/mtime/size so incremental same-start saves keep the shorter export on overlaps.\n\nStreaming stamp-only names (`IOGraphica - YYYY-MM-DD_HH-MM-SS.csv`, no duration) are out of scope.\n\n```mermaid\nflowchart TD\n  scan[scan_csv_directory] --\u003e parse[parsed_filename_dt_range]\n  parse --\u003e|absolute| absNode[start_plus_duration_hours]\n  parse --\u003e|legacy_dated_or_simple| legNode[mtime_anchored_from_to]\n  parse --\u003e|no_match| natNode[NaT_dropped]\n  absNode --\u003e master[build_master_df]\n  legNode --\u003e master\n  master --\u003e overlap[overlap_session_groups]\n  overlap --\u003e dedupe[unique_sample_time_keep_first_rank]\n```\n\n## Implementation\n\n### 1. Parser in iograph_data.py\n\nAdd a module regex matching `YYYY-MM-DD_HH-MM-SS_\u003cfloat\u003eh`.\n\nIn `_parsed_filename_dt_range`:\n\n1. Try absolute match first; on hit parse start and set `dt_end = dt_start + pd.Timedelta(hours=float(duration))`; return without needing mtime.\n2. Then keep existing early NaT-on-missing-mtime gate for legacy paths only.\n3. Keep dated then simple branches unchanged.\n\nUpdate `_parsed_filename_dt_ranges_vectorized` to apply the absolute pattern to unmatched rows (prefer vectorized `str.extract` + Timedelta like the simple branch; no mtime gate for absolute rows).\n\n### 2. Tests\n\nUpdate both mirrored suites so they stay aligned:\n\n- [PhoPyMNEHelper/tests/test_iograph_processor.py](c:/Users/pho/repos/EmotivEpoc/ACTIVE_DEV/PhoPyMNEHelper/tests/test_iograph_processor.py)\n- [pyPhoTimeline/tests/test_iograph_recordings_datasource.py](c:/Users/pho/repos/EmotivEpoc/ACTIVE_DEV/pyPhoTimeline/tests/test_iograph_recordings_datasource.py)\n\nAdd:\n\n- Absolute parse unit test for `IOGraphica - 2026-11-09_12-34-12_14.8083h.csv` expecting start `2026-11-09 12:34:12` and end = start + 14.8083h.\n- Assert absolute parse still works when `modified_datetime` is NaT.\n- Keep existing simple/dated tests.\n- Absolute incremental merge test (same start stamp, `0.5h` vs `1.0h`) asserting one session, shorter file wins on overlap, longer file supplies the tail — mirroring `test_incremental_saves_same_start_shorter_wins`.\n\nOptional lightweight check: parse the real sample basename from [IOGraph/data/test_output/IOGraphica - 2026-11-09_12-34-12_14.8083h.csv](c:/Users/pho/repos/EmotivEpoc/ACTIVE_DEV/IOGraph/data/test_output/IOGraphica%20-%202026-11-09_12-34-12_14.8083h.csv); do not load the full ~447k-row file in unit tests.\n\n### 3. Validation\n\nRun the focused tests from both packages after the change. No IOGraph app packaging changes.\n\n## Out of scope\n\n- Changing IOGraph export naming itself.\n- CSV schema / column changes.\n- Streaming no-duration filenames.\n- Changing end-anchored `sample_time` math or overlap ranking policy.\n",
+  "todos": [
+    {
+      "content": "Add absolute filename regex and parse branch (scalar + vectorized) in iograph_data.py; keep legacy paths",
+      "id": "add-absolute-regex",
+      "status": "pending"
+    },
+    {
+      "content": "Add absolute parse unit tests (incl. NaT mtime) in PhoPyMNEHelper and pyPhoTimeline test mirrors",
+      "id": "unit-tests-parse",
+      "status": "pending"
+    },
+    {
+      "content": "Add absolute-format incremental overlap/dedupe merge test in both test suites",
+      "id": "unit-tests-merge",
+      "status": "pending"
+    },
+    {
+      "content": "Run focused iograph processor / recordings datasource tests to confirm parse + merge",
+      "id": "run-focused-tests",
+      "status": "pending"
+    }
+  ]
+}
+````
+Additional data:
+
+```json
+{
+  "hasOpenedEditor": true,
+  "planId": "iograph_absolute_csv_parse_974cf620",
+  "planUri": "file:///c%3A/Users/pho/.cursor/plans/iograph_absolute_csv_parse_974cf620.plan.md",
+  "reviewData": {
+    "isShowingInput": false,
+    "selectedOption": "none",
+    "status": "Requested"
+  }
+}
+```
+Result:
+
+```json
+{
+  "rejected": {}
+}
+```
+Status: **completed**
+
+</details></tool-use>
+
+---
+
+_**User**_
+
+write unit tests for both @c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\ and @c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper\ 
+
+---
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+The plan now includes unit tests for both IOGraph and PhoPyMNEHelper.
+</details></think>
+
+_**Agent (default)**_
+
+Updating the plan to cover unit tests in both IOGraph and PhoPyMNEHelper. Checking each repo's existing test layout first.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\.cursor\plans\iograph_absolute_csv_parse_974cf620.plan.md</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="search" data-tool-name="glob_file_search"><details>
+<summary>Tool use: **glob_file_search** • Searched codebase "" • **0** results in **1** directory</summary>
+
+Directory: **`c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph`** (0 files)
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search"><details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+Parameters:
+
+```json
+{
+  "caseInsensitive": false,
+  "glob": "**/*.{py,toml,yml,md}",
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph",
+  "pattern": "export_base_name|pytest|unittest"
+}
+```
+Additional data:
+
+```json
+{
+  "isPruned": true,
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph",
+  "pattern": "export_base_name|pytest|unittest",
+  "topFiles": [
+    {
+      "matchCount": 1,
+      "uri": ".cursor\\chats\\2026-11-10_16-56-48-0800-iograph-csv-filename-update.md"
+    },
+    {
+      "matchCount": 1,
+      "uri": ".cursor\\plans\\iograph_absolute_csv_parse_974cf620.plan.md"
+    },
+    {
+      "matchCount": 16,
+      "uri": ".cursor\\chats\\2026-11-10_17-00-35-0800-find-iograph-csv-naming.md"
+    },
+    {
+      "matchCount": 1,
+      "uri": ".cursor\\chats\\2026-11-10_17-00-31-0800-explore-iograph-filename-parsing.md"
+    },
+    {
+      "matchCount": 1,
+      "uri": ".cursor/chats/2026-11-10_17-00-31-0800-explore-iograph-filename-parsing.md"
+    },
+    {
+      "matchCount": 16,
+      "uri": ".cursor/chats/2026-11-10_17-00-35-0800-find-iograph-csv-naming.md"
+    },
+    {
+      "matchCount": 3,
+      "uri": ".cursor/chats/2026-10-22_15-07-53-0700-explore-iograph-csv-recording.md"
+    },
+    {
+      "matchCount": 2,
+      "uri": ".cursor/chats/2026-10-22_15-04-32-0700-continuous-csv-output-streaming.md"
+    },
+    {
+      "matchCount": 4,
+      "uri": "iograph/main.py"
+    },
+    {
+      "matchCount": 1,
+      "uri": "iograph/core/session_controller.py"
+    },
+    {
+      "matchCount": 2,
+      "uri": "iograph/core/tracking_controller.py"
+    }
+  ],
+  "totalFiles": 11,
+  "totalMatches": 48
+}
+```
+Status: **completed**
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper\tests\test_iograph_processor.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+IOGraph currently has no pytest unit tests. It relies on smoke_regression instead.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="search" data-tool-name="glob_file_search"><details>
+<summary>Tool use: **glob_file_search** • Searched codebase "" • **1** result in **1** directory</summary>
+
+Directory: **`c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph`** (1 file)
+
+| File |
+|------|
+| `scripts\smoke_regression.py` |
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\iograph\core\session_controller.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search"><details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+Parameters:
+
+```json
+{
+  "caseInsensitive": false,
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph\\.github",
+  "pattern": "pytest|unittest|smoke_regression"
+}
+```
+Additional data:
+
+```json
+{
+  "isPruned": true,
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph\\.github",
+  "pattern": "pytest|unittest|smoke_regression",
+  "topFiles": [
+    {
+      "matchCount": 1,
+      "uri": ".github/workflows/ci-python.yml"
+    }
+  ],
+  "totalFiles": 1,
+  "totalMatches": 1
+}
+```
+Status: **completed**
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\iograph\services\csv_stream.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+I will write unit tests for both the IOGraph and PhoPyMNEHelper directories.
+</details></think>
+
+_**Agent (default)**_
+
+Updating the plan: add a first IOGraph pytest suite for filename generation, and keep PhoPyMNEHelper parse/merge coverage as the consumer-side tests.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2"><details>
+<summary>Tool use: **edit_file_v2** • Edit file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\.cursor\plans\iograph_absolute_csv_parse_974cf620.plan.md</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+The plan has been updated.
+</details></think>
+
+_**Agent (default)**_
+
+Updated the plan to require unit tests in **both** repos:
+
+**IOGraph** (producer) — first `tests/` pytest suite:
+- `export_base_name` absolute basename + duration formatting
+- `stream_csv_path` / `unique_csv_path` collision handling
+
+**PhoPyMNEHelper** (consumer) — extend `test_iograph_processor.py`:
+- absolute filename → start/end datetimes (incl. NaT mtime)
+- absolute incremental overlap merge/dedupe
+
+pyPhoTimeline’s mirrored suite stays a secondary sync; CI smoke for IOGraph is unchanged. Say when you want this executed.
+
+---
+
+_**User**_
+
+Implement the plan as specified, it is attached for your reference. Do NOT edit the plan file itself.
+
+To-do's from the plan have already been created. Do not create them again. Mark them as in_progress as you work, starting with the first one. Don't stop until you have completed all the to-dos.
+
+---
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+Beginning implementation of the plan for absolute IOGraph CSV filenames and unit tests.
+</details></think>
+
+_**Agent (default)**_
+
+Implementing absolute filename parsing first, then the IOGraph and PhoPyMNEHelper unit tests.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="todo_write"><details>
+<summary>Tool use: **todo_write**</summary>
+
+Parameters:
+
+```json
+{
+  "merge": true
+}
+```
+Result:
+
+```json
+{
+  "finalTodos": [
+    {
+      "content": "Add absolute filename regex and parse branch (scalar + vectorized) in PhoPyMNEHelper iograph_data.py; keep legacy paths",
+      "id": "add-absolute-regex",
+      "status": "in_progress"
+    },
+    {
+      "content": "Add IOGraph tests/ suite for export_base_name and stream_csv_path absolute filename generation",
+      "id": "iograph-unit-tests",
+      "status": "pending"
+    },
+    {
+      "content": "Add PhoPyMNEHelper absolute parse + incremental merge/dedupe unit tests in test_iograph_processor.py",
+      "id": "phopymnehelper-unit-tests",
+      "status": "pending"
+    },
+    {
+      "content": "Run focused IOGraph and PhoPyMNEHelper unit tests to confirm naming + parse/merge",
+      "id": "run-focused-tests",
+      "status": "pending"
+    },
+    {
+      "content": "Add absolute parse unit tests (incl. NaT mtime) in PhoPyMNEHelper and pyPhoTimeline test mirrors",
+      "id": "unit-tests-parse",
+      "status": "pending"
+    },
+    {
+      "content": "Add absolute-format incremental overlap/dedupe merge test in both test suites",
+      "id": "unit-tests-merge",
+      "status": "pending"
+    }
+  ],
+  "initialTodos": [
+    {
+      "content": "Add absolute filename regex and parse branch (scalar + vectorized) in PhoPyMNEHelper iograph_data.py; keep legacy paths",
+      "id": "add-absolute-regex",
+      "status": "pending"
+    },
+    {
+      "content": "Add IOGraph tests/ suite for export_base_name and stream_csv_path absolute filename generation",
+      "id": "iograph-unit-tests",
+      "status": "pending"
+    },
+    {
+      "content": "Add PhoPyMNEHelper absolute parse + incremental merge/dedupe unit tests in test_iograph_processor.py",
+      "id": "phopymnehelper-unit-tests",
+      "status": "pending"
+    },
+    {
+      "content": "Run focused IOGraph and PhoPyMNEHelper unit tests to confirm naming + parse/merge",
+      "id": "run-focused-tests",
+      "status": "pending"
+    }
+  ],
+  "success": true,
+  "wasMerge": true
+}
+```
+Status: **completed**
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper\src\phopymnehelper\iograph_data.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\iograph\core\session_controller.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper\tests\test_iograph_processor.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+I'll implement the absolute regex parsing in iograph_data.py first, then write the tests.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2"><details>
+<summary>Tool use: **edit_file_v2** • Edit file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper\src\phopymnehelper\iograph_data.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2"><details>
+<summary>Tool use: **edit_file_v2** • Edit file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper\src\phopymnehelper\iograph_data.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+The parser is complete. Next steps are being determined.
+</details></think>
+
+_**Agent (default)**_
+
+Parser is in place. Next I'll add the IOGraph and PhoPyMNEHelper unit tests.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="todo_write"><details>
+<summary>Tool use: **todo_write**</summary>
+
+Parameters:
+
+```json
+{
+  "merge": true
+}
+```
+Result:
+
+```json
+{
+  "finalTodos": [
+    {
+      "content": "Add absolute filename regex and parse branch (scalar + vectorized) in PhoPyMNEHelper iograph_data.py; keep legacy paths",
+      "id": "add-absolute-regex",
+      "status": "completed"
+    },
+    {
+      "content": "Add IOGraph tests/ suite for export_base_name and stream_csv_path absolute filename generation",
+      "id": "iograph-unit-tests",
+      "status": "in_progress"
+    },
+    {
+      "content": "Add PhoPyMNEHelper absolute parse + incremental merge/dedupe unit tests in test_iograph_processor.py",
+      "id": "phopymnehelper-unit-tests",
+      "status": "pending"
+    },
+    {
+      "content": "Run focused IOGraph and PhoPyMNEHelper unit tests to confirm naming + parse/merge",
+      "id": "run-focused-tests",
+      "status": "pending"
+    },
+    {
+      "content": "Add absolute parse unit tests (incl. NaT mtime) in PhoPyMNEHelper and pyPhoTimeline test mirrors",
+      "id": "unit-tests-parse",
+      "status": "cancelled"
+    },
+    {
+      "content": "Add absolute-format incremental overlap/dedupe merge test in both test suites",
+      "id": "unit-tests-merge",
+      "status": "cancelled"
+    }
+  ],
+  "initialTodos": [
+    {
+      "content": "Add absolute filename regex and parse branch (scalar + vectorized) in PhoPyMNEHelper iograph_data.py; keep legacy paths",
+      "id": "add-absolute-regex",
+      "status": "in_progress"
+    },
+    {
+      "content": "Add IOGraph tests/ suite for export_base_name and stream_csv_path absolute filename generation",
+      "id": "iograph-unit-tests",
+      "status": "pending"
+    },
+    {
+      "content": "Add PhoPyMNEHelper absolute parse + incremental merge/dedupe unit tests in test_iograph_processor.py",
+      "id": "phopymnehelper-unit-tests",
+      "status": "pending"
+    },
+    {
+      "content": "Run focused IOGraph and PhoPyMNEHelper unit tests to confirm naming + parse/merge",
+      "id": "run-focused-tests",
+      "status": "pending"
+    },
+    {
+      "content": "Add absol
+… (output truncated)
+```
+Status: **completed**
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2"><details>
+<summary>Tool use: **edit_file_v2** • Edit file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\tests\test_export_base_name.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2"><details>
+<summary>Tool use: **edit_file_v2** • Edit file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\tests\test_stream_csv_path.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+SessionController inherits from QObject, so tests may need QApplication or PyQt6.
+
+Checking if SessionController can be instantiated without QApplication. Planning PhoPyMNEHelper tests and a pyPhoTimeline mirror. The sample file basename will use an IOGraph test output Path or a hardcoded value. Verifying iograph importability from tests via conftest or PYTHONPATH.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2"><details>
+<summary>Tool use: **edit_file_v2** • Edit file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper\tests\test_iograph_processor.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2"><details>
+<summary>Tool use: **edit_file_v2** • Edit file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper\tests\test_iograph_processor.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2"><details>
+<summary>Tool use: **edit_file_v2** • Edit file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\pyPhoTimeline\tests\test_iograph_recordings_datasource.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2"><details>
+<summary>Tool use: **edit_file_v2** • Edit file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\pyPhoTimeline\tests\test_iograph_recordings_datasource.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+Verifying absolute time anchoring for the merge test.
+
+Confirmed absolute CSV timestamps map to 10:15:00 and 10:30:00 for the short file, and 10:15:00 and 11:00:00 for the long file.
+</details></think>
+
+_**Agent (default)**_
+
+Running focused tests next, and verifying whether SessionController needs a Qt app for construction.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="todo_write"><details>
+<summary>Tool use: **todo_write**</summary>
+
+Parameters:
+
+```json
+{
+  "merge": true
+}
+```
+Result:
+
+```json
+{
+  "finalTodos": [
+    {
+      "content": "Add absolute filename regex and parse branch (scalar + vectorized) in PhoPyMNEHelper iograph_data.py; keep legacy paths",
+      "id": "add-absolute-regex",
+      "status": "completed"
+    },
+    {
+      "content": "Add IOGraph tests/ suite for export_base_name and stream_csv_path absolute filename generation",
+      "id": "iograph-unit-tests",
+      "status": "completed"
+    },
+    {
+      "content": "Add PhoPyMNEHelper absolute parse + incremental merge/dedupe unit tests in test_iograph_processor.py",
+      "id": "phopymnehelper-unit-tests",
+      "status": "completed"
+    },
+    {
+      "content": "Run focused IOGraph and PhoPyMNEHelper unit tests to confirm naming + parse/merge",
+      "id": "run-focused-tests",
+      "status": "in_progress"
+    },
+    {
+      "content": "Add absolute parse unit tests (incl. NaT mtime) in PhoPyMNEHelper and pyPhoTimeline test mirrors",
+      "id": "unit-tests-parse",
+      "status": "cancelled"
+    },
+    {
+      "content": "Add absolute-format incremental overlap/dedupe merge test in both test suites",
+      "id": "unit-tests-merge",
+      "status": "cancelled"
+    }
+  ],
+  "initialTodos": [
+    {
+      "content": "Add absolute filename regex and parse branch (scalar + vectorized) in PhoPyMNEHelper iograph_data.py; keep legacy paths",
+      "id": "add-absolute-regex",
+      "status": "completed"
+    },
+    {
+      "content": "Add IOGraph tests/ suite for export_base_name and stream_csv_path absolute filename generation",
+      "id": "iograph-unit-tests",
+      "status": "in_progress"
+    },
+    {
+      "content": "Add PhoPyMNEHelper absolute parse + incremental merge/dedupe unit tests in test_iograph_processor.py",
+      "id": "phopymnehelper-unit-tests",
+      "status": "pending"
+    },
+    {
+      "content": "Run focused IOGraph and PhoPyMNEHelper unit tests to confirm naming + parse/merge",
+      "id": "run-focused-tests",
+      "status": "pending"
+    },
+    {
+      "content": "Add
+… (output truncated)
+```
+Status: **completed**
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: python -m compileall iograph; python -m pytest tests/test_export_base_name.py tests/test_stream_csv_path.py -q</summary>
+```bash
+python -m compileall iograph; python -m pytest tests/test_export_base_name.py tests/test_stream_csv_path.py -q
+```
+
+```
+Listing 'iograph'...
+Listing 'iograph\\.ts'...
+Listing 'iograph\\app'...
+Listing 'iograph\\app\\.ts'...
+Listing 'iograph\\core'...
+Listing 'iograph\\core\\.ts'...
+Compiling 'iograph\\core\\session_controller.py'...
+Compiling 'iograph\\main.py'...
+Listing 'iograph\\resources'...
+Listing 'iograph\\resources\\.ts'...
+Listing 'iograph\\services'...
+Listing 'iograph\\services\\.ts'...
+Compiling 'iograph\\services\\csv_stream.py'...
+Compiling 'iograph\\services\\i18n.py'...
+Compiling 'iograph\\services\\settings.py'...
+Compiling 'iograph\\tracker.py'...
+Listing 'iograph\\ui'...
+Listing 'iograph\\ui\\.ts'...
+Compiling 'iograph\\ui\\menu_builder.py'...
+Compiling 'iograph\\ui\\panel_widgets.py'...
+C:\Python314\python.exe: No module named pytest
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: python -m pytest tests/test_iograph_processor.py -q</summary>
+```bash
+python -m pytest tests/test_iograph_processor.py -q
+```
+
+```
+C:\Python314\python.exe: No module named pytest
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+pytest is not installed in the system Python environment.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: where python; where uv; where pytest; Get-ChildItem -Path . -Filter &#34;uv.lock&#34; -ErrorAction SilentlyContinue; Get-ChildItem -Path &#34;..&#34; -Directory | Select-Object Name</summary>
+```bash
+where python; where uv; where pytest; Get-ChildItem -Path . -Filter "uv.lock" -ErrorAction SilentlyContinue; Get-ChildItem -Path ".." -Directory | Select-Object Name
+```
+
+```
+
+    Directory: C:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---          10/22/2026  6:17 PM         196562 uv.lock
+
+Name : .agents
+
+
+Name : .cursor
+
+
+Name : .specstory
+
+
+Name : .vscode
+
+
+Name : App-AudioCapture
+
+
+Name : App-LabRecorder
+
+
+Name : AppWritePlatform
+
+
+Name : brain2qwerty
+
+
+Name : continuous_video_recorder
+
+
+Name : CrisperWhisper
+
+
+Name : Dose-Analysis-Python
+
+
+Name : emotiv-lsl
+
+
+Name : emotiv-lsl-cpp
+
+
+Name : EmotivEpoc_extract_raw_EEG_without_license
+
+
+Name : freemocap
+
+
+Name : IOGraph
+
+
+Name : lab-recorder-python
+
+
+Name : LSL
+
+
+Name : medusa
+
+
+Name : medusa-platform - Copy
+
+
+Name : MedusaRoot
+
+
+Name : mne-python
+
+
+Name : mne-python_BAK
+
+
+Name : mnelab
+
+
+Name : NeuroPy
+
+
+Name : NeuroPype
+
+
+Name : PhoLogToLabStreamingLayer
+
+
+Name : PhoOfflineEEGAnalysis
+
+
+Name : phoOpenVIBE
+
+
+Name : PhoPyLSLhelper
+
+
+Name : PhoPyMNEHelper
+
+
+Name : phopyqthelper
+
+
+Name : phoRerunTesting
+
+
+Name : PhoTaskTracker
+
+
+Name : pyPhoCoreHelpers
+
+
+Name : pyPhoTimeline
+
+
+Name : PyQtInspect-Open
+
+
+Name : pysb-pkpd
+
+
+Name : python_xdf_streamer
+
+
+Name : pyxdf
+
+
+Name : rerun
+
+
+Name : stream_viewer
+
+
+Name : uv-deps-switcher
+
+
+Name : uv-launcher
+
+
+Name : vispy_timeline
+
+
+Name : whisper-timestamped
+
+
+Name : xdf-tagger
+
+
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="search" data-tool-name="glob_file_search"><details>
+<summary>Tool use: **glob_file_search** • Searched codebase "" • **2** results in **1** directory</summary>
+
+Directory: **`c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\PhoPyMNEHelper`** (2 files)
+
+| File |
+|------|
+| `uv.lock` |
+| `pyproject.toml` |
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="search" data-tool-name="glob_file_search"><details>
+<summary>Tool use: **glob_file_search** • Searched codebase "" • **2** results in **1** directory</summary>
+
+Directory: **`c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph`** (2 files)
+
+| File |
+|------|
+| `uv.lock` |
+| `pyproject.toml` |
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+Both projects have uv.lock files. I'll run tests with `uv run pytest` to use the project's environment.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: uv run pytest tests/test_export_base_name.py tests/test_stream_csv_path.py -q</summary>
+```bash
+uv run pytest tests/test_export_base_name.py tests/test_stream_csv_path.py -q
+```
+
+```
+   Building iograph @ file:///C:/Users/pho/repos/EmotivEpoc/ACTIVE_DEV/IOGraph
+      Built iograph @ file:///C:/Users/pho/repos/EmotivEpoc/ACTIVE_DEV/IOGraph
+Uninstalled 1 package in 2ms
+Installed 1 package in 12ms
+C:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\.venv\Scripts\python.exe: No module named pytest
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: uv run pytest tests/test_iograph_processor.py -q</summary>
+```bash
+uv run pytest tests/test_iograph_processor.py -q
+```
+
+```
+Pytest: 8 passed in 1.02s
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+PhoPyMNEHelper tests passed. They ran from the IOGraph working directory.
+</details></think>
+
+_**Agent (default)**_
+
+PhoPyMNEHelper tests passed. Installing pytest in the IOGraph env so we can run its new suite.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\pyproject.toml</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: uv add --dev pytest; uv run pytest tests/test_export_base_name.py tests/test_stream_csv_path.py -q</summary>
+```bash
+uv add --dev pytest; uv run pytest tests/test_export_base_name.py tests/test_stream_csv_path.py -q
+```
+
+```
+Resolved 43 packages in 377ms
+   Building iograph @ file:///C:/Users/pho/repos/EmotivEpoc/ACTIVE_DEV/IOGraph
+      Built iograph @ file:///C:/Users/pho/repos/EmotivEpoc/ACTIVE_DEV/IOGraph
+Prepared 1 package in 661ms
+Uninstalled 1 package in 1ms
+Installed 6 packages in 226ms
+ + colorama==0.4.6
+ + iniconfig==2.3.1
+ ~ iograph==2.0.5 (from file:///C:/Users/pho/repos/EmotivEpoc/ACTIVE_DEV/IOGraph)
+ + pluggy==1.7.0
+ + pygments==2.21.0
+ + pytest==9.2.0
+Pytest: 5 passed, 1 failed in 0.15s
+
+Failures:
+1. [FAIL] test_export_base_name_sanitizes_app_name
+     tests\test_export_base_name.py:24: in test_export_base_name_sanitizes_app_name
+     E   AssertionError: assert False
+     E    +  where False = <built-in method startswith of str object at 0x0000020EB8F1DB30>('IO-Graph-...
+     E    +    where <built-in method startswith of str object at 0x0000020EB8F1DB30> = 'IO-Graph-ica-...
+[full output: rtk recall 8139af9297fd6444]
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+The sanitize test failed because `*` was not replaced with `-` in the filename.
+
+The sanitized filename ends with a trailing dash, so the expected prefix check fails.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2"><details>
+<summary>Tool use: **edit_file_v2** • Edit file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\tests\test_export_base_name.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: uv run pytest tests/test_export_base_name.py tests/test_stream_csv_path.py -q; uv run --project ../PhoPyMNEHelper pytest ../PhoPyMNEHelper/tests/test_iograph_processor.py -q</summary>
+```bash
+uv run pytest tests/test_export_base_name.py tests/test_stream_csv_path.py -q; uv run --project ../PhoPyMNEHelper pytest ../PhoPyMNEHelper/tests/test_iograph_processor.py -q
+```
+
+```
+Pytest: 6 passed in 0.05s
+........                                                                 [100%]
+8 passed in 0.82s
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\pyproject.toml</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+All tests passed. Running pyPhoTimeline mirror tests and marking the final todo complete.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: uv run pytest tests/test_iograph_recordings_datasource.py -q -k &#34;parsed_filename or incremental or overlapping&#34;</summary>
+```bash
+uv run pytest tests/test_iograph_recordings_datasource.py -q -k "parsed_filename or incremental or overlapping"
+```
+
+```
+Pytest: 6 passed in 0.93s
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="todo_write"><details>
+<summary>Tool use: **todo_write**</summary>
+
+Parameters:
+
+```json
+{
+  "merge": true
+}
+```
+Result:
+
+```json
+{
+  "finalTodos": [
+    {
+      "content": "Add absolute filename regex and parse branch (scalar + vectorized) in PhoPyMNEHelper iograph_data.py; keep legacy paths",
+      "id": "add-absolute-regex",
+      "status": "completed"
+    },
+    {
+      "content": "Add IOGraph tests/ suite for export_base_name and stream_csv_path absolute filename generation",
+      "id": "iograph-unit-tests",
+      "status": "completed"
+    },
+    {
+      "content": "Add PhoPyMNEHelper absolute parse + incremental merge/dedupe unit tests in test_iograph_processor.py",
+      "id": "phopymnehelper-unit-tests",
+      "status": "completed"
+    },
+    {
+      "content": "Run focused IOGraph and PhoPyMNEHelper unit tests to confirm naming + parse/merge",
+      "id": "run-focused-tests",
+      "status": "completed"
+    },
+    {
+      "content": "Add absolute parse unit tests (incl. NaT mtime) in PhoPyMNEHelper and pyPhoTimeline test mirrors",
+      "id": "unit-tests-parse",
+      "status": "cancelled"
+    },
+    {
+      "content": "Add absolute-format incremental overlap/dedupe merge test in both test suites",
+      "id": "unit-tests-merge",
+      "status": "cancelled"
+    }
+  ],
+  "initialTodos": [
+    {
+      "content": "Add absolute filename regex and parse branch (scalar + vectorized) in PhoPyMNEHelper iograph_data.py; keep legacy paths",
+      "id": "add-absolute-regex",
+      "status": "completed"
+    },
+    {
+      "content": "Add IOGraph tests/ suite for export_base_name and stream_csv_path absolute filename generation",
+      "id": "iograph-unit-tests",
+      "status": "completed"
+    },
+    {
+      "content": "Add PhoPyMNEHelper absolute parse + incremental merge/dedupe unit tests in test_iograph_processor.py",
+      "id": "phopymnehelper-unit-tests",
+      "status": "completed"
+    },
+    {
+      "content": "Run focused IOGraph and PhoPyMNEHelper unit tests to confirm naming + parse/merge",
+      "id": "run-focused-tests",
+      "status": "in_progress"
+    },
+    {
+      "content": "A
+… (output truncated)
+```
+Status: **completed**
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+Implementation is complete. I will now summarize what was built and what remains.
+</details></think>
+
+_**Agent (default)**_
+
+Absolute CSV filename support is in place, with unit coverage on both sides.
+
+### What was made
+1. **PhoPyMNEHelper** — `IOGraphProcessor` now parses `YYYY-MM-DD_HH-MM-SS_<hours>h` first (no mtime needed), then falls back to legacy `(from … to …)`.
+2. **IOGraph tests** — `tests/test_export_base_name.py` and `tests/test_stream_csv_path.py`; added `pytest` as a dev dependency.
+3. **PhoPyMNEHelper tests** — absolute parse (incl. NaT mtime), sample basename check, absolute incremental merge/dedupe.
+4. **pyPhoTimeline** — mirrored absolute parse/merge cases.
+
+### Validation
+- IOGraph: **6 passed**
+- PhoPyMNEHelper: **8 passed**
+- pyPhoTimeline focused: **6 passed**
+
+---
+
+_**User**_
+
+@IOGraph/tests these should be unittest tests
+
+---
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+Converting the IOGraph tests from pytest to unittest.
+</details></think>
+
+_**Agent (default)**_
+
+Converting the IOGraph tests from pytest style to `unittest`.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\tests\test_export_base_name.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\tests\test_stream_csv_path.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+Converting both files to unittest tests.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2"><details>
+<summary>Tool use: **edit_file_v2** • Edit file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\tests\test_export_base_name.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2"><details>
+<summary>Tool use: **edit_file_v2** • Edit file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\tests\test_stream_csv_path.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: uv run python -m unittest tests.test_export_base_name tests.test_stream_csv_path -v</summary>
+```bash
+uv run python -m unittest tests.test_export_base_name tests.test_stream_csv_path -v
+```
+
+```
+test_export_base_name_absolute_start_and_duration (tests.test_export_base_name.TestExportBaseName.test_export_base_name_absolute_start_and_duration) ... ok
+test_export_base_name_fallback_now_shape_when_not_started (tests.test_export_base_name.TestExportBaseName.test_export_base_name_fallback_now_shape_when_not_started) ... ok
+test_export_base_name_sanitizes_app_name (tests.test_export_base_name.TestExportBaseName.test_export_base_name_sanitizes_app_name) ... ok
+test_stream_csv_path_absolute_start_stamp (tests.test_stream_csv_path.TestStreamCsvPath.test_stream_csv_path_absolute_start_stamp) ... ok
+test_stream_csv_path_collision_allocates_suffix (tests.test_stream_csv_path.TestStreamCsvPath.test_stream_csv_path_collision_allocates_suffix) ... ok
+test_unique_csv_path_increments_until_free (tests.test_stream_csv_path.TestStreamCsvPath.test_unique_csv_path_increments_until_free) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.007s
+
+OK
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+Removing the unused `re` import from `test_export_base_name.py` after switching to `assertRegex`.
+</details></think>
+
+_**Agent (default)**_
+
+Removed the unused `re` import.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2"><details>
+<summary>Tool use: **edit_file_v2** • Edit file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\tests\test_export_base_name.py</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+The IOGraph tests have been converted to unittest.
+</details></think>
+
+_**Agent (default)**_
+
+Converted both IOGraph test modules to `unittest.TestCase` (with `tempfile.TemporaryDirectory` instead of pytest’s `tmp_path`). All 6 tests pass via `python -m unittest`.

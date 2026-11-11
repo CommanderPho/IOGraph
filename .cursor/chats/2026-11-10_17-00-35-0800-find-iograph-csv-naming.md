@@ -1142,9 +1142,8 @@ _**Agent (composer-2.5)**_
 _**Agent (composer-2.5)**_
 
 <tool-use data-tool-type="search" data-tool-name="glob_file_search"><details>
-<summary>Tool use: **glob_file_search** • Searched codebase "" • **0** results in **0** directories</summary>
-
-No results found
+<summary>Tool use: **glob_file_search**</summary>
+Timed out after 25s
 </details></tool-use>
 
 _**Agent (composer-2.5)**_
@@ -1162,15 +1161,90 @@ Parameters:
   "pattern": "8083|14\\.8083|_\\\\d+h"
 }
 ```
-Status: **loading**
+Additional data:
+
+```json
+{
+  "isPruned": true,
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV",
+  "pattern": "8083|14\\.8083|_\\\\d+h",
+  "topFiles": [
+    {
+      "matchCount": 5,
+      "uri": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph\\.cursor\\chats\\2026-11-10_17-00-35-0800-find-iograph-csv-naming.md"
+    },
+    {
+      "matchCount": 3,
+      "uri": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph\\.cursor\\chats\\2026-11-10_17-00-31-0800-explore-iograph-filename-parsing.md"
+    },
+    {
+      "matchCount": 3,
+      "uri": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph\\.cursor\\chats\\2026-11-10_16-56-48-0800-iograph-csv-filename-update.md"
+    },
+    {
+      "matchCount": 19,
+      "uri": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph\\data\\test_output\\IOGraphica - 2026-11-09_12-34-12_14.8083h.csv"
+    }
+  ],
+  "totalFiles": 4,
+  "totalMatches": 1256
+}
+```
+Status: **completed**
 
 </details></tool-use>
 
 _**Agent (composer-2.5)**_
 
+<think><details><summary>Thought Process</summary>
+Checking whether the old format's date strings like "15-08" come from QLocale.system() formatting.
+
+The old export template is `{safe_app} - {safe_time} ({safe_period})`. `safe_time` comes from `tracking_time_text`, which appears to show integer hours rather than decimal values like "4.9".
+</details></think>
+
+_**Agent (composer-2.5)**_
+
 <tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search"><details>
 <summary>Tool use: **ripgrep_raw_search**</summary>
-Status: **loading**
+
+Parameters:
+
+```json
+{
+  "caseInsensitive": false,
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph",
+  "pattern": "4\\.9|export.*hours|getFileName"
+}
+```
+Additional data:
+
+```json
+{
+  "isPruned": true,
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph",
+  "pattern": "4\\.9|export.*hours|getFileName",
+  "topFiles": [
+    {
+      "matchCount": 8,
+      "uri": ".\\.cursor\\chats\\2026-11-10_17-00-35-0800-find-iograph-csv-naming.md"
+    },
+    {
+      "matchCount": 2,
+      "uri": ".\\.cursor\\chats\\2026-11-10_16-56-48-0800-iograph-csv-filename-update.md"
+    },
+    {
+      "matchCount": 8,
+      "uri": ".\\uv.lock"
+    }
+  ],
+  "totalFiles": 3,
+  "totalMatches": 18
+}
+```
+Status: **completed**
 
 </details></tool-use>
 
@@ -1181,12 +1255,409 @@ _**Agent (composer-2.5)**_
 ```bash
 cd "c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph" && git show 6ccd65b -p -- iograph/core/session_controller.py | head -80
 ```
+
+```
+head: The term 'head' is not recognized as a name of a cmdlet, function, script file, or executable program.
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+
+```
 </details></tool-use>
 
 _**Agent (composer-2.5)**_
 
 <tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search"><details>
 <summary>Tool use: **ripgrep_raw_search**</summary>
-Status: **loading**
+
+Parameters:
+
+```json
+{
+  "caseInsensitive": false,
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph\\iograph\\main.py",
+  "pattern": "session\\.started_at|start_tracking"
+}
+```
+Additional data:
+
+```json
+{
+  "isPruned": true,
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph\\iograph\\main.py",
+  "pattern": "session\\.started_at|start_tracking",
+  "topFiles": [
+    {
+      "matchCount": 1,
+      "uri": "iograph\\main.py"
+    }
+  ],
+  "totalFiles": 1,
+  "totalMatches": 1
+}
+```
+Status: **completed**
 
 </details></tool-use>
+
+_**Agent (composer-2.5)**_
+
+<think><details><summary>Thought Process</summary>
+The old format's "4.9 hours" suffix comes from `tracking_time_text`, which uses integer hours when the duration is at least 60 minutes.
+
+The old "4.9 hours" suffix likely comes from a Java legacy version, since Python's `tracking_time_text` only produces whole hours. The repository should be checked for Java code.
+
+The old period label uses `From {start} to {end}` with locale-aware clock times. The start timestamp comes from SessionController when tracking begins, and the end timestamp is either the stop time or the current time at export. The duration text uses coarse buckets: seconds, minutes, hours, or days.
+
+The new filename uses a local naive datetime string from `_started_at` in `YYYY-MM-DD_HH-MM-SS` format. The duration suffix is the canvas-based monotonic elapsed milliseconds rounded to seconds, divided by 3600, and formatted to four decimal places with an "h" appended. This duration reflects canvas time rather than wall-clock session length. The save dialog applies this base name at export time using the current elapsed value. A separate streaming path, `stream_csv_path`, writes only the start timestamp without any duration.
+</details></think>
+
+_**Agent (composer-2.5)**_
+
+<tool-use data-tool-type="search" data-tool-name="glob_file_search"><details>
+<summary>Tool use: **glob_file_search** • Searched codebase "" • **0** results in **1** directory</summary>
+
+Directory: **`c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph`** (0 files)
+</details></tool-use>
+
+_**Agent (composer-2.5)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search"><details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+Parameters:
+
+```json
+{
+  "caseInsensitive": false,
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph\\iograph\\main.py",
+  "pattern": "start_tracking|session_controller"
+}
+```
+Additional data:
+
+```json
+{
+  "isPruned": true,
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph\\iograph\\main.py",
+  "pattern": "start_tracking|session_controller",
+  "topFiles": [
+    {
+      "matchCount": 2,
+      "uri": "iograph\\main.py"
+    }
+  ],
+  "totalFiles": 1,
+  "totalMatches": 2
+}
+```
+Status: **completed**
+
+</details></tool-use>
+
+_**Agent (composer-2.5)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\.cursor\chats\2026-10-22_15-07-53-0700-explore-iograph-csv-recording.md</summary>
+
+</details></tool-use>
+
+_**Agent (composer-2.5)**_
+
+<think><details><summary>Thought Process</summary>
+Documentation confirms the CSV time column contains elapsed milliseconds from session start.
+
+The old format likely originates from Java, though the Python codebase also produced similar filenames via `tracking_time_text` truncated to whole hours. The period label uses `format_time` with QLocale, which can render clock times as "15-08" depending on locale or backend. I will document these findings.
+</details></think>
+
+_**Agent (composer-2.5)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search"><details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+Parameters:
+
+```json
+{
+  "caseInsensitive": false,
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph\\iograph\\tracker.py",
+  "pattern": "get_elapsed_ms|_accumulated_ms"
+}
+```
+Additional data:
+
+```json
+{
+  "isPruned": true,
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph\\iograph\\tracker.py",
+  "pattern": "get_elapsed_ms|_accumulated_ms",
+  "topFiles": [
+    {
+      "matchCount": 9,
+      "uri": "iograph\\tracker.py"
+    }
+  ],
+  "totalFiles": 1,
+  "totalMatches": 9
+}
+```
+Status: **completed**
+
+</details></tool-use>
+
+_**Agent (composer-2.5)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search"><details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+Parameters:
+
+```json
+{
+  "caseInsensitive": false,
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph\\iograph\\main.py",
+  "pattern": "stop_tracking|start_tracking"
+}
+```
+Additional data:
+
+```json
+{
+  "isPruned": true,
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph\\iograph\\main.py",
+  "pattern": "stop_tracking|start_tracking",
+  "topFiles": [
+    {
+      "matchCount": 2,
+      "uri": "iograph\\main.py"
+    }
+  ],
+  "totalFiles": 1,
+  "totalMatches": 2
+}
+```
+Status: **completed**
+
+</details></tool-use>
+
+_**Agent (composer-2.5)**_
+
+<think><details><summary>Thought Process</summary>
+When tracking stops, accumulated_ms increases while session ended_at is set.
+</details></think>
+
+_**Agent (composer-2.5)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="update_current_step"><details>
+<summary>Tool use: **update_current_step**</summary>
+An unknown error occurred
+</details></tool-use>
+
+_**Agent (composer-2.5)**_
+
+<think><details><summary>Thought Process</summary>
+I will compile a comprehensive report with code citations.
+</details></think>
+
+_**Agent (composer-2.5)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search"><details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+Parameters:
+
+```json
+{
+  "caseInsensitive": false,
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph\\iograph",
+  "pattern": "write.*\\.csv|\\.csv\\\""
+}
+```
+Additional data:
+
+```json
+{
+  "isPruned": true,
+  "outputMode": "content",
+  "path": "c:\\Users\\pho\\repos\\EmotivEpoc\\ACTIVE_DEV\\IOGraph\\iograph",
+  "pattern": "write.*\\.csv|\\.csv\\\"",
+  "topFiles": [
+    {
+      "matchCount": 1,
+      "uri": "iograph/main.py"
+    },
+    {
+      "matchCount": 2,
+      "uri": "iograph/services/csv_stream.py"
+    },
+    {
+      "matchCount": 2,
+      "uri": "iograph/core/export_controller.py"
+    }
+  ],
+  "totalFiles": 3,
+  "totalMatches": 5
+}
+```
+Status: **completed**
+
+</details></tool-use>
+
+_**Agent (composer-2.5)**_
+
+<think><details><summary>Thought Process</summary>
+Only two CSV naming paths exist in the Python IOGraph codebase.
+</details></think>
+
+_**Agent (composer-2.5)**_
+
+## CSV filename generation (IOGraph Python)
+
+There is no `iograph_2/` in this repo; everything lives under `iograph/`.
+
+### 1. Code that builds the **new** filename
+
+**Primary (Save Raw Data / save-dialog default, PNG too):**
+
+```85:105:c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\iograph\core\session_controller.py
+    def export_base_name(
+        self,
+        elapsed_ms: int,
+        app_name: str = "IOGraphica",
+        *,
+        tr=lambda s: s,
+        format_time=None,
+        format_date=None,
+    ) -> str:
+        safe_app = self._sanitize_filename_component(app_name)
+        
+        if self._started_at:
+            start_str = self._started_at.strftime("%Y-%m-%d_%H-%M-%S")
+        else:
+            start_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            
+        total_seconds = round(elapsed_ms / 1000.0)
+        duration_hours = total_seconds / 3600.0
+        safe_duration = self._sanitize_filename_component(f"{duration_hours:.4f}h")
+        
+        return f"{safe_app} - {start_str}_{safe_duration}"
+```
+
+Wiring:
+
+```483:488:c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\iograph\main.py
+    def _save_csv(self) -> None:
+        default_dir = self._default_save_dir()
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            self._t("save.raw.dialog_title"),
+            str(default_dir / f"{self._build_export_base_name()}.csv"),
+```
+
+```924:931:c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\iograph\main.py
+    def _build_export_base_name(self) -> str:
+        return self._tracking_controller.export_base_name(
+            self._canvas.get_elapsed_ms(),
+            app_name="IOGraphica",
+            tr=self._t,
+            format_time=self._i18n.format_time,
+            format_date=self._i18n.format_short_date,
+        )
+```
+
+**Second path (continuous CSV streaming — no duration in name):**
+
+```64:66:c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\iograph\services\csv_stream.py
+def stream_csv_path(directory: Path, started_at: datetime | None = None) -> Path:
+    stamp = (started_at or datetime.now()).strftime("%Y-%m-%d_%H-%M-%S")
+    return unique_csv_path(directory / f"IOGraphica - {stamp}.csv")
+```
+
+Called from `main.py` `_ensure_csv_stream_started()` (~605).
+
+**Git change:** commit `96da77d` — *"formatted output filenames to keep datetime of start"* (replaced old `export_base_name` logic).
+
+---
+
+### 2. Filename component semantics (new format)
+
+Example: `IOGraphica - 2026-11-09_12-34-12_14.8083h.csv`
+
+| Part | Meaning |
+|------|---------|
+| `IOGraphica` | Fixed app name (`app_name` / hard-coded in streaming) |
+| `2026-11-09_12-34-12` | **Session start** wall time: `SessionController._started_at` at first `start_tracking()`, formatted `%Y-%m-%d_%H-%M-%S` (hyphens in time, not colons — filesystem-safe) |
+| `14.8083h` | **Tracking elapsed** at save/default time: `round(elapsed_ms/1000)/3600`, 4 decimal places + `h`; `elapsed_ms` from canvas (`get_elapsed_ms()`), not `ended_at - started_at` |
+| Timezone | **None in the string** — naive `datetime.now()` / `strftime` = **local system clock** (no tz offset) |
+
+**Old format** (pre-`96da77d`, same function):
+
+`{IOGraphica} - {tracking_time_text} ({period_label})`  
+e.g. `IOGraphica - 4.9 hours (from 15-08 to 20-05).csv`
+
+- **Duration segment:** localized `tracking_time_text(elapsed_ms)` (seconds / minutes / **whole hours** / days — not `14.8083h` style).
+- **Parentheses:** `period_label` = wall-clock **From {start} to {end}** using `QLocale.system()` time + UI-language date when days differ (`session_controller.period_label`, i18n `session.period.from_to_template`).
+- Your sample’s `4.9 hours` and lowercase `from` match the **Java/legacy family** closely; Python’s old text would usually say **“4 hours”** (integer bucket) and **“From …”** (capital F). Structure is the same idea: duration + inferred clock window, not an absolute calendar slug.
+
+---
+
+### 3. CSV content: absolute vs relative time
+
+**Only relative milliseconds** in column `time` — not absolute datetimes.
+
+```135:142:c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\iograph\tracker.py
+    def export_csv_text(self) -> str:
+        lines = ["x,y,time"]
+        for x, y, t in self._raw_samples:
+            if x is None or y is None:
+                lines.append(f",,{t}")
+            else:
+                lines.append(f"{int(round(x))},{int(round(y))},{t}")
+        return "\n".join(lines) + "\n"
+```
+
+Streaming uses the same columns via `format_csv_row` / header `x,y,time\n` in `csv_stream.py`.
+
+**Sample peek:**
+
+- **New:** header `x,y,time`; first data `2074,933,55` (starts at 55 ms — e.g. restored/partial session).
+- **Old:** header `x,y,time`; first data `1895,987,0`.
+
+Downstream tools derive absolute times from **filename** (+ optional file mtime for old names), not from CSV rows.
+
+---
+
+### 4. Docs / chats mentioning the format change
+
+| Source | Notes |
+|--------|--------|
+| Git `96da77d` | Explicit rename to start-datetime + `X.XXXXh` |
+| `c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\.cursor\chats\2026-11-10_16-56-48-0800-iograph-csv-filename-update.md` | User note: new names are **absolute** vs inferring from mtime + duration |
+| `c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\.cursor\chats\2026-10-22_15-07-53-0700-explore-iograph-csv-recording.md` | Documents `IOGraphica - YYYY-MM-DD_HH-MM-SS_<hours>h.csv` |
+| `c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\.cursor\chats\2026-10-22_15-04-32-0700-continuous-csv-output-streaming.md` | Streaming: `IOGraphica - YYYY-MM-DD_HH-MM-SS.csv` (no duration); early note wanted `export_base_name` — **implemented as separate `stream_csv_path`** |
+| `c:\Users\pho\repos\EmotivEpoc\ACTIVE_DEV\IOGraph\.cursor\plans\continuous_csv_streaming_92c09293.plan.md` | Stable start stamp, `_001` collisions |
+
+---
+
+### 5. CSV schema: old vs new
+
+**Unchanged:** `x,y,time`; empty `x,y` = idle rows; `time` = int ms from session tracking timeline.
+
+No new columns, no ISO timestamps in the file body — **only the default export basename** (and streaming basename) changed.
+
+---
+
+### Quick reference: three filename behaviors today
+
+| Use case | Pattern |
+|----------|---------|
+| File → Save Raw Data (default) | `IOGraphica - {start}_{duration}h.csv` via `export_base_name` |
+| Save PNG default | Same base name |
+| Stream CSV continuously | `IOGraphica - {start}.csv` (+ `_001` if collision) |
